@@ -18,7 +18,7 @@ use Symfony\Component\Routing\Annotation\Route;
 class SecurityAPIController extends Controller {
 
     /**
-     * @Route("/api/security/login", name="security_api_login")
+     * @Route("/api/security/login", name="security_api_login", methods={"POST"})
      */
     public function login() {
         $user = $this->getUser();

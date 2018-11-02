@@ -4,6 +4,7 @@ namespace App\Command;
 
 use App\Entity\Base\SecurityGroup;
 use App\Entity\Base\User;
+use App\Entity\Core\Catalog;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
@@ -26,7 +27,6 @@ class InitCommand extends Command {
     }
 
     protected function execute(InputInterface $input, OutputInterface $output) {
-
 		$userRepo = $this->entityManager->getRepository(User::class);
 		$root = $userRepo->findOneBy(["username" => "root"]);
 		if (empty($root)) {
@@ -59,10 +59,33 @@ class InitCommand extends Command {
         }
         $userGroup->setName("User Group");
         $userGroup->setSiteToken("ROLE_USER");
+
+        $defaults = [
+            [
+                "shortString" => "default_1",
+                "friendlyName" => "分類一"
+            ], [
+                "shortString" => "default_2",
+                "friendlyName" => "分類二"
+            ], [
+                "shortString" => "default_3",
+                "friendlyName" => "Type 3"
+            ],
+        ];
+        foreach ($defaults as $default) {
+            $catalog = $this->entityManager->getRepository(Catalog::class)->findOneBy([
+                "shortString" => $default["shortString"]
+            ]);
+            if (empty($catalog)) {
+                $catalog = new Catalog();
+                $catalog->setShortString($default["shortString"]);
+                $catalog->setFriendlyName($default["friendlyName"]);
+            }
+            $this->entityManager->persist($catalog);
+        }
 		$this->entityManager->persist($adminGroup);
         $this->entityManager->persist($userGroup);
 		$this->entityManager->persist($root);
-
 		$this->entityManager->flush();
     }
 

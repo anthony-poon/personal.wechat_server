@@ -73,6 +73,13 @@ class User extends DirectoryObject implements UserInterface, \Serializable {
 	 * @ORM\ManyToMany(targetEntity="SecurityGroup", mappedBy="children")
 	 */
 	private $securityGroups;
+
+    /**
+     * @var Collection
+     * @ORM\OneToMany(targetEntity="\App\Entity\Core\CatalogItem", mappedBy="owner")
+     */
+	private $ownedItems;
+
     public function serialize() {
         return serialize([
             $this->id,
@@ -230,4 +237,13 @@ class User extends DirectoryObject implements UserInterface, \Serializable {
 	public function getFriendlyClassName(): string {
 		return "User";
 	}
+
+    /**
+     * @return Collection
+     */
+    public function getOwnedItems(): Collection {
+        return $this->ownedItems;
+    }
+
+
 }
