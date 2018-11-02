@@ -12,11 +12,13 @@ This is an template used for building web applications. It is build using on Sym
 GET
 
     Read a user with id without admin privilege, can only get account with ROLE_USER
-    Query Parameters: {
-        "id": int               optional
-        "fullName": string      optional
-    }
     Json Body: null
+    Example:
+        /api/users?id=1                         Get user with id 1
+        /api/users?fullName=Anthony+Poon        Get user with fullName exactly match "Anthony Poon"
+    TODO:
+        Accept wild card name
+        Account muliple id
     
 POST
 
@@ -32,13 +34,14 @@ POST
 GET
     
     Read a user with id without admin privilege, can only get account with ROLE_USER
+    Query Parameters: {
+        "id": int               optional
+        "fullName": string      optional
+    }
     Json Body: null
     Example:
-        /api/users?id=1                         Get user with id 1
-        /api/users?fullName=Anthony+Poon        Get user with fullName exactly match "Anthony Poon"
-    TODO:
-        Accept wild card name
-        Account muliple id
+        GET /api/users/1        Get user with id 1
+    
     
 PUT
     
@@ -47,6 +50,11 @@ PUT
         "password": string      optional, min=5, max=50
         "fullName": string      regex=/^[\w_\-\. ]+$/u
     }
+    Example:
+        POST /api/users/1               Change name user of id 1 to "Testing"
+        Content: {
+            "fullName": "Testing"
+        }
         
         
 **Route: /api/security/login**
