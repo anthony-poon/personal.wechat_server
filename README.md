@@ -66,3 +66,30 @@ POST
         "username": string      min=1
         "password": string      min=1
     }
+    
+**Route: /api/catalogs**
+
+GET
+
+    Get all available catalog
+    Query Parameters: none
+    Json Body: none
+    
+    
+**Route: /api/catalogs/{id}**
+
+GET
+
+    Get a catalog by id
+    
+    
+**Route: /api/catalogs/{id}/catalog-items**
+    
+GET
+    
+    Query catalog items under a catalog
+    Query Parameter:
+        region: string          optional, filter result by region
+    Example:
+        GET /api/catalogs/16/catalog-items
+        GET /api/catalogs/16/catalog-items?region=region_1

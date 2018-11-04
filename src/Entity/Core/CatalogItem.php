@@ -9,6 +9,7 @@
 namespace App\Entity\Core;
 
 use App\Entity\Base\User;
+use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Validator\Constraints as Assert;
@@ -53,6 +54,26 @@ class CatalogItem {
     private $catalog;
 
     /**
+     * @var string
+     * @ORM\Column(type="string", length=64)
+     */
+    private $region;
+
+    /**
+     * @var Collection
+     * @ORM\ManyToMany(targetEntity="\App\Entity\Base\Asset")
+     * @ORM\JoinTable(name="catalog_item_asset_mapping",
+     *     joinColumns={@ORM\JoinColumn(name="catalog_item", referencedColumnName="id")},
+     *     inverseJoinColumns={@ORM\JoinColumn(name="catalog_id", referencedColumnName="id")}
+     * )
+     */
+    private $assets;
+
+    public function __construct() {
+        $this->assets = new ArrayCollection();
+    }
+
+    /**
      * @return int
      */
     public function getId(): int {
@@ -74,9 +95,9 @@ class CatalogItem {
     }
 
     /**
-     * @return string|void
+     * @return string
      */
-    public function getDescription() {
+    public function getDescription(): ?string {
         return $this->description;
     }
 
@@ -115,5 +136,26 @@ class CatalogItem {
         $this->catalog = $catalog;
     }
 
+    /**
+     * @return string
+     */
+    public function getRegion(): string {
+        return $this->region;
+    }
 
+    /**
+     * @param string $region
+     * @return CatalogItem
+     */
+    public function setRegion(string $region): CatalogItem {
+        $this->region = $region;
+        return $this;
+    }
+
+    /**
+     * @return Collection
+     */
+    public function getAssets(): Collection {
+        return $this->assets;
+    }
 }
