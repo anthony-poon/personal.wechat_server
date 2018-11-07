@@ -31,7 +31,7 @@ class Store {
 
     /**
      * @var User
-     * @ORM\OneToOne(targetEntity="\App\Entity\Base\User", mappedBy="store")
+     * @ORM\OneToOne(targetEntity="\App\Entity\Base\User", inversedBy="store")
      */
     private $owner;
 
@@ -43,9 +43,13 @@ class Store {
 
     /**
      * @var Collection
-     * @ORM\OneToMany(targetEntity="\App\Entity\Core\StoreItem", mappedBy="store")
+     * @ORM\OneToMany(targetEntity="\App\Entity\Core\AbstractStoreItem", mappedBy="store", cascade={"remove"})
      */
     private $storeItems;
+
+    public function __construct() {
+        $this->storeItems = new ArrayCollection();
+    }
 
     /**
      * @return int
@@ -62,10 +66,26 @@ class Store {
     }
 
     /**
+     * @param User $owner
+     * @return Store
+     */
+    public function setOwner(User $owner): Store {
+        $this->owner = $owner;
+        return $this;
+    }
+
+    /**
      * @return Collection
      */
-    public function getStoreItems(): Collection {
-        return $this->storeItems;
+    public function getStoreItems(string $class = null): Collection {
+        if ($class) {
+            return $this->storeItems->filter(function(AbstractStoreItem $item) use ($class) {
+                return get_class($item) === $class;
+            });
+        } else {
+            return $this->storeItems;
+        }
+
     }
 
     /**

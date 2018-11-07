@@ -8,6 +8,7 @@
 
 namespace App\Entity\Base;
 
+use App\Entity\Core\Store;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
@@ -75,10 +76,10 @@ class User extends DirectoryObject implements UserInterface, \Serializable {
 	private $securityGroups;
 
     /**
-     * @var Collection
-     * @ORM\OneToMany(targetEntity="\App\Entity\Core\CatalogItem", mappedBy="owner")
+     * @var Store
+     * @ORM\OneToOne(targetEntity="\App\Entity\Core\Store", mappedBy="owner");
      */
-	private $ownedItems;
+	private $store;
 
     public function serialize() {
         return serialize([
@@ -239,11 +240,9 @@ class User extends DirectoryObject implements UserInterface, \Serializable {
 	}
 
     /**
-     * @return Collection
+     * @return Store
      */
-    public function getOwnedItems(): Collection {
-        return $this->ownedItems;
+    public function getStore(): ?Store {
+        return $this->store;
     }
-
-
 }

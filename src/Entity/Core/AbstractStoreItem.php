@@ -15,12 +15,14 @@ use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Validator\Constraints as Assert;
 
 /**
- * Class Asset
- * @package App\Entity\Base
- * @ORM\Table(name="catalog_item")
+ * Class AbstractStoreItem
+ * @package App\Entity\Core
+ * @ORM\Table(name="store_item")
  * @ORM\Entity()
+ * @ORM\InheritanceType("JOINED")
+ * @ORM\DiscriminatorColumn(name="item_type", type="string")
  */
-class CatalogItem {
+class AbstractStoreItem {
     /**
      * @var int
      * @ORM\Column(type="integer", length=11)
@@ -42,29 +44,23 @@ class CatalogItem {
     private $description;
 
     /**
-     * @var User
-     * @ORM\ManyToOne(targetEntity="\App\Entity\Base\User", inversedBy="ownedItems")
+     * @var Store
+     * @ORM\ManyToOne(targetEntity="\App\Entity\Core\Store", inversedBy="storeItems")
      */
-    private $owner;
-
-    /**
-     * @var Catalog
-     * @ORM\ManyToOne(targetEntity="\App\Entity\Core\Catalog", inversedBy="catalogItems")
-     */
-    private $catalog;
+    private $store;
 
     /**
      * @var string
      * @ORM\Column(type="string", length=64)
      */
-    private $region;
+    private $city;
 
     /**
      * @var Collection
-     * @ORM\ManyToMany(targetEntity="\App\Entity\Base\Asset")
-     * @ORM\JoinTable(name="catalog_item_asset_mapping",
-     *     joinColumns={@ORM\JoinColumn(name="catalog_item", referencedColumnName="id")},
-     *     inverseJoinColumns={@ORM\JoinColumn(name="catalog_id", referencedColumnName="id")}
+     * @ORM\ManyToMany(targetEntity="\App\Entity\Base\Asset", cascade={"remove"})
+     * @ORM\JoinTable(name="store_item_asset_mapping",
+     *     joinColumns={@ORM\JoinColumn(name="store_item_id", referencedColumnName="id")},
+     *     inverseJoinColumns={@ORM\JoinColumn(name="asset_id", referencedColumnName="id", unique=true, onDelete="cascade")}
      * )
      */
     private $assets;
@@ -109,46 +105,18 @@ class CatalogItem {
     }
 
     /**
-     * @return User
-     */
-    public function getOwner(): User {
-        return $this->owner;
-    }
-
-    /**
-     * @param User $owner
-     */
-    public function setOwner(User $owner): void {
-        $this->owner = $owner;
-    }
-
-    /**
-     * @return Catalog
-     */
-    public function getCatalog(): Catalog {
-        return $this->catalog;
-    }
-
-    /**
-     * @param Catalog $catalog
-     */
-    public function setCatalog(Catalog $catalog): void {
-        $this->catalog = $catalog;
-    }
-
-    /**
      * @return string
      */
-    public function getRegion(): string {
-        return $this->region;
+    public function getCity(): string {
+        return $this->city;
     }
 
     /**
-     * @param string $region
-     * @return CatalogItem
+     * @param string $city
+     * @return AbstractStoreItem
      */
-    public function setRegion(string $region): CatalogItem {
-        $this->region = $region;
+    public function setCity(string $city): AbstractStoreItem {
+        $this->city = $city;
         return $this;
     }
 
@@ -158,4 +126,19 @@ class CatalogItem {
     public function getAssets(): Collection {
         return $this->assets;
     }
+
+    /**
+     * @return Store
+     */
+    public function getStore(): Store {
+        return $this->store;
+    }
+
+    /**
+     * @param Store $store
+     */
+    public function setStore(Store $store): void {
+        $this->store = $store;
+    }
+
 }
