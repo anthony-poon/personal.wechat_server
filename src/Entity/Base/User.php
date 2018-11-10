@@ -8,7 +8,7 @@
 
 namespace App\Entity\Base;
 
-use App\Entity\Core\Store;
+use App\Entity\Core\AbstractStoreFront;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
@@ -42,7 +42,7 @@ class User extends DirectoryObject implements UserInterface, \Serializable {
     private $fullName;
 
     /**
-     * @ORM\Column(type="string", length=4096)
+     * @ORM\Column(type="string", length=4096, nullable=true)
      */
     private $password;
 
@@ -76,10 +76,22 @@ class User extends DirectoryObject implements UserInterface, \Serializable {
 	private $securityGroups;
 
     /**
-     * @var Store
-     * @ORM\OneToOne(targetEntity="\App\Entity\Core\Store", mappedBy="owner");
+     * @var Collection
+     * @ORM\OneToMany(targetEntity="\App\Entity\Core\AbstractStoreFront", mappedBy="owner");
      */
-	private $store;
+	private $stores;
+
+    /**
+     * @var ?string
+     * @ORM\Column(type="string", length=512, nullable=true)
+     */
+	private $weChatOpenId;
+
+	public function __construct() {
+	    parent::__construct();
+	    $this->stores = new ArrayCollection();
+	    $this->securityGroups = new ArrayCollection();
+    }
 
     public function serialize() {
         return serialize([
@@ -240,9 +252,25 @@ class User extends DirectoryObject implements UserInterface, \Serializable {
 	}
 
     /**
-     * @return Store
+     * @return Collection
      */
-    public function getStore(): ?Store {
-        return $this->store;
+    public function getStores(): ?Collection {
+        return $this->stores;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getWeChatOpenId() {
+        return $this->weChatOpenId;
+    }
+
+    /**
+     * @param mixed $weChatOpenId
+     * @return User
+     */
+    public function setWeChatOpenId($weChatOpenId) {
+        $this->weChatOpenId = $weChatOpenId;
+        return $this;
     }
 }

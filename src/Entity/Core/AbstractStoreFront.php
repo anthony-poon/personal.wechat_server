@@ -15,12 +15,14 @@ use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Validator\Constraints as Assert;
 
 /**
- * Class Asset
- * @package App\Entity\Base
- * @ORM\Table(name="store")
+ * Class AbstractStoreItem
+ * @package App\Entity\Core
+ * @ORM\Table(name="abstract_store_front")
  * @ORM\Entity()
+ * @ORM\InheritanceType("JOINED")
+ * @ORM\DiscriminatorColumn(name="store_front_type", type="string")
  */
-class Store {
+abstract class AbstractStoreFront {
     /**
      * @var int
      * @ORM\Column(type="integer", length=11)
@@ -31,7 +33,7 @@ class Store {
 
     /**
      * @var User
-     * @ORM\OneToOne(targetEntity="\App\Entity\Base\User", inversedBy="store")
+     * @ORM\ManyToOne(targetEntity="\App\Entity\Base\User", inversedBy="store")
      */
     private $owner;
 
@@ -40,16 +42,6 @@ class Store {
      * @ORM\Column(type="string", length=64)
      */
     private $name;
-
-    /**
-     * @var Collection
-     * @ORM\OneToMany(targetEntity="\App\Entity\Core\AbstractStoreItem", mappedBy="store", cascade={"remove"})
-     */
-    private $storeItems;
-
-    public function __construct() {
-        $this->storeItems = new ArrayCollection();
-    }
 
     /**
      * @return int
@@ -67,25 +59,11 @@ class Store {
 
     /**
      * @param User $owner
-     * @return Store
+     * @return AbstractStoreFront
      */
-    public function setOwner(User $owner): Store {
+    public function setOwner(User $owner): AbstractStoreFront {
         $this->owner = $owner;
         return $this;
-    }
-
-    /**
-     * @return Collection
-     */
-    public function getStoreItems(string $class = null): Collection {
-        if ($class) {
-            return $this->storeItems->filter(function(AbstractStoreItem $item) use ($class) {
-                return get_class($item) === $class;
-            });
-        } else {
-            return $this->storeItems;
-        }
-
     }
 
     /**
@@ -97,12 +75,16 @@ class Store {
 
     /**
      * @param string $name
-     * @return Store
+     * @return AbstractStoreFront
      */
-    public function setName(string $name): Store {
+    public function setName(string $name): AbstractStoreFront {
         $this->name = $name;
         return $this;
     }
 
+    abstract public function getModule(): AbstractModule;
 
+    abstract public function setModule(AbstractModule $module): AbstractStoreFront;
+
+    abstract public function getStoreItems(): Collection;
 }

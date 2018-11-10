@@ -10,6 +10,7 @@ namespace App\Controller\Base;
 
 use App\Entity\Base\SecurityGroup;
 use App\Entity\Base\User;
+use App\Entity\Core\AbstractStoreFront;
 use App\Service\JSONValidator;
 use App\Voter\UserVoter;
 use Doctrine\Common\Collections\ArrayCollection;
@@ -63,8 +64,12 @@ class UserAPIController extends Controller {
                     "siteToken" => "ROLE_USER"
                 ]);
                 $userGroup->addChild($user);
+                $store = new AbstractStoreFront();
+                $store->setName($user->getFullName()."'s Store");
+                $store->setOwner($user);
                 $em = $this->getDoctrine()->getManager();
                 $this->denyAccessUnlessGranted(UserVoter::CREATE, $user);
+                $em->persist($store);
                 $em->persist($user);
                 $em->persist($userGroup);
                 $em->flush();

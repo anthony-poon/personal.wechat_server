@@ -6,6 +6,12 @@ security:
         dev:
             pattern: ^/(_(profiler|wdt)|css|images|js)/
             security: false
+#        api:
+#            anonymous: ~
+#            pattern: ^/api/
+#            guard:
+#                authenticators:
+#                    - App\WeChatAuthentication\WeChatAuthenticator
         main:
             anonymous: ~
             provider: db_provider

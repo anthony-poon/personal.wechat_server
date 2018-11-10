@@ -17,12 +17,12 @@ use Symfony\Component\Validator\Constraints as Assert;
 /**
  * Class AbstractStoreItem
  * @package App\Entity\Core
- * @ORM\Table(name="store_item")
+ * @ORM\Table(name="abstract_store_item")
  * @ORM\Entity()
  * @ORM\InheritanceType("JOINED")
- * @ORM\DiscriminatorColumn(name="item_type", type="string")
+ * @ORM\DiscriminatorColumn(name="store_item_type", type="string")
  */
-class AbstractStoreItem {
+abstract class AbstractStoreItem {
     /**
      * @var int
      * @ORM\Column(type="integer", length=11)
@@ -44,20 +44,8 @@ class AbstractStoreItem {
     private $description;
 
     /**
-     * @var Store
-     * @ORM\ManyToOne(targetEntity="\App\Entity\Core\Store", inversedBy="storeItems")
-     */
-    private $store;
-
-    /**
-     * @var string
-     * @ORM\Column(type="string", length=64)
-     */
-    private $city;
-
-    /**
      * @var Collection
-     * @ORM\ManyToMany(targetEntity="\App\Entity\Base\Asset", cascade={"remove"})
+     * @ORM\ManyToMany(targetEntity="\App\Entity\Base\Asset", cascade={"remove", "persist"})
      * @ORM\JoinTable(name="store_item_asset_mapping",
      *     joinColumns={@ORM\JoinColumn(name="store_item_id", referencedColumnName="id")},
      *     inverseJoinColumns={@ORM\JoinColumn(name="asset_id", referencedColumnName="id", unique=true, onDelete="cascade")}
@@ -105,40 +93,14 @@ class AbstractStoreItem {
     }
 
     /**
-     * @return string
-     */
-    public function getCity(): string {
-        return $this->city;
-    }
-
-    /**
-     * @param string $city
-     * @return AbstractStoreItem
-     */
-    public function setCity(string $city): AbstractStoreItem {
-        $this->city = $city;
-        return $this;
-    }
-
-    /**
      * @return Collection
      */
     public function getAssets(): Collection {
         return $this->assets;
     }
 
-    /**
-     * @return Store
-     */
-    public function getStore(): Store {
-        return $this->store;
-    }
+    abstract function getStoreFront(): AbstractStoreFront;
 
-    /**
-     * @param Store $store
-     */
-    public function setStore(Store $store): void {
-        $this->store = $store;
-    }
+    abstract function setStoreFront(AbstractStoreFront $storeFront): AbstractStoreItem;
 
 }

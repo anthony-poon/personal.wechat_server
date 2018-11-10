@@ -61,35 +61,32 @@ PUT
     
 POST   
     
-    Login and start session
+    Login and start session *not working now
     Json Body: {
         "username": string      min=1
         "password": string      min=1
     }
     
-**Route: /api/catalogs**
+**Route: /api/cities**
 
 GET
 
-    Get all available catalog
-    Query Parameters: none
-    Json Body: none
+    Get all available cities
     
-    
-**Route: /api/catalogs/{id}**
+**Route: /api/cities/{id}**
 
 GET
 
-    Get a catalog by id
+    Get a cities by id, listing available modules under the cities
     
-    
-**Route: /api/catalogs/{id}/catalog-items**
+**Route: /api/modules/{id}**
     
 GET
     
-    Query catalog items under a catalog
-    Query Parameter:
-        region: string          optional, filter result by region
-    Example:
-        GET /api/catalogs/16/catalog-items
-        GET /api/catalogs/16/catalog-items?region=region_1
+    Get a module by id, listing available store-fronts under the module
+    
+**Route: /api/store-fronts/{id}**
+    
+GET
+    
+    Get a store-front by id, listing available store-item under the store-front
