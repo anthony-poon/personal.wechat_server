@@ -10,10 +10,9 @@ namespace App\Controller\Base;
 
 use App\Entity\Base\SecurityGroup;
 use App\Entity\Base\User;
-use App\Entity\Core\AbstractStoreFront;
 use App\Service\JSONValidator;
+use App\Exception\ValidationException;
 use App\Voter\UserVoter;
-use Doctrine\Common\Collections\ArrayCollection;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
@@ -27,8 +26,9 @@ class UserAPIController extends Controller {
     /**
      * Register a new user without admin privilege
      * @Route("/api/users", methods={"POST"})
+     * @throws ValidationException
      */
-    public function createUser(Request $request, JSONValidator $validator, UserPasswordEncoderInterface $encoder) {
+    public function createUser(Request $request, JsonValidator $validator, UserPasswordEncoderInterface $encoder) {
         $json = json_decode($request->getContent(), true);
         $this->denyAccessUnlessGranted(UserVoter::CREATE);
         $constraint = [
@@ -52,26 +52,28 @@ class UserAPIController extends Controller {
                 new Assert\Regex("/^[\w_\-\. ]+$/u"),
             ]
         ];
-        $result = $validator->validate($json, $constraint);
-        if (200 == $result->getStatusCode()) {
-            $user = new User();
-            $user->setUsername($json["username"]);
-            $user->setPassword($encoder->encodePassword($user, $json["password"]));
-            $user->setFullName($json["fullName"]);
-            $result = $validator->validateEntity($user);
-            if (200 == $result->getStatusCode()) {
-                $userGroup = $this->getDoctrine()->getRepository(SecurityGroup::class)->findOneBy([
-                    "siteToken" => "ROLE_USER"
-                ]);
-                $userGroup->addChild($user);
-                $em = $this->getDoctrine()->getManager();
-                $this->denyAccessUnlessGranted(UserVoter::CREATE, $user);
-                $em->persist($user);
-                $em->persist($userGroup);
-                $em->flush();
-            }
-        }
-        return $result;
+        $validator->validate($json, $constraint);
+        $user = new User();
+        $user->setUsername($json["username"]);
+        $user->setPassword($encoder->encodePassword($user, $json["password"]));
+        $user->setFullName($json["fullName"]);
+        $validator->validateEntity($user);
+        $userGroup = $this->getDoctrine()->getRepository(SecurityGroup::class)->findOneBy([
+            "siteToken" => "ROLE_USER"
+        ]);
+        $userGroup->addChild($user);
+        $em = $this->getDoctrine()->getManager();
+        $this->denyAccessUnlessGranted(UserVoter::CREATE, $user);
+        $em->persist($user);
+        $em->persist($userGroup);
+        $em->flush();
+        return new JsonResponse([
+            "status" => "success",
+            "user" => [
+                "id" => $user->getId(),
+                "fullName" => $user->getFullName(),
+            ]
+        ]);
     }
 
     /**
@@ -79,31 +81,20 @@ class UserAPIController extends Controller {
      * @Route("/api/users/{id}", methods={"GET"}, requirements={"id"="\d+"})
      */
     public function readUser($id) {
-        try {
-            $user = $this->getDoctrine()->getRepository(User::class)->findOneBy([
-                "id" => $id,
-            ]);
-            $this->denyAccessUnlessGranted(UserVoter::READ, $user);
-            if ($user) {
-                return new JsonResponse([
-                    "status" => "success",
-                    "user" => [
-                        "id" => $user->getId(),
-                        "fullName" => $user->getFullName(),
-                    ]
-                ]);
-            } else {
-                return new JsonResponse([
-                    "status" => "failure",
-                    "error" => "Entity cannot be located."
-                ], 404);
-            }
-        } catch (AccessDeniedException $ex) {
-            // Force 404 instead of 500
+        $user = $this->getDoctrine()->getRepository(User::class)->findOneBy([
+            "id" => $id,
+        ]);
+        $this->denyAccessUnlessGranted(UserVoter::READ, $user);
+        if ($user) {
             return new JsonResponse([
-                "status" => "failure",
-                "error" => "Entity cannot be located."
-            ], 404);
+                "status" => "success",
+                "user" => [
+                    "id" => $user->getId(),
+                    "fullName" => $user->getFullName(),
+                ]
+            ]);
+        } else {
+            throw new NotFoundHttpException("Entity cannot be located.");
         }
     }
 
@@ -112,9 +103,9 @@ class UserAPIController extends Controller {
      * @Route("/api/users", methods={"GET"})
      */
     public function queryUser(Request $request) {
-        $querys = $request->query->all();
+        $queries = $request->query->all();
         $criteria = [];
-        foreach ($querys as $k => $v) {
+        foreach ($queries as $k => $v) {
             if ($v) {
                 switch ($k) {
                     case "id":
@@ -143,10 +134,7 @@ class UserAPIController extends Controller {
         if (0 !== count($rtn["users"])) {
             return new JsonResponse($rtn);
         } else {
-            return new JsonResponse([
-                "status" => "failure",
-                "error" => "Entity cannot be located."
-            ], 404);
+            throw new NotFoundHttpException("Entity cannot be located.");
         }
     }
 
@@ -154,41 +142,46 @@ class UserAPIController extends Controller {
      * Update a user with id without admin privilege
      * Can only update self
      * @Route("/api/users/{id}", methods={"PUT"}, requirements={"id"="\d+"})
+     * @throws ValidationException
+     * @throws NotFoundHttpException
      */
-    public function updateUser($id, Request $request, JSONValidator $validator, UserPasswordEncoderInterface $encoder) {
+    public function updateUser($id, Request $request, JsonValidator $validator, UserPasswordEncoderInterface $encoder) {
         $json = json_decode($request->getContent(), true);
         $user = $this->getDoctrine()->getRepository(User::class)->find($id);
         $this->denyAccessUnlessGranted(UserVoter::UPDATE, $user);
         if ($user) {
             $constraint = [
                 "password" => [
-                    new Assert\Optional(),
-                    new Assert\Length([
-                        "min" => 5,
-                        "max" => 50
-                    ])
+                    new Assert\Optional([
+                        new Assert\Length([
+                            "min" => 5,
+                            "max" => 50
+                        ])
+                    ]),
+
                 ],
                 "fullName" => [
                     new Assert\NotBlank(),
                     new Assert\Regex("/^[\w_\-\. ]+$/u"),
                 ]
             ];
-            $result = $validator->validate($json, $constraint);
-            if (200 == $result->getStatusCode()) {
-                $user->setFullName($json["fullName"]);
-                if ($json["password"] ?? false) {
-                    $user->setPassword($encoder->encodePassword($user, $json["password"]));
-                }
-                $result = $validator->validateEntity($user);
-                $em = $this->getDoctrine()->getManager();
-                $em->persist($user);
-                $em->flush();
+            $validator->validate($json, $constraint);
+            $user->setFullName($json["fullName"]);
+            if ($json["password"] ?? false) {
+                $user->setPassword($encoder->encodePassword($user, $json["password"]));
             }
-            return $result;
+            $validator->validateEntity($user);
+            $em = $this->getDoctrine()->getManager();
+            $em->persist($user);
+            $em->flush();
+            return new JsonResponse([
+                "status" => "success",
+                "user" => [
+                    "id" => $user->getId(),
+                    "fullName" => $user->getFullName(),
+                ]
+            ]);
         }
-        return new JsonResponse([
-            "status" => "failure",
-            "error" => "Entity cannot be located."
-        ], 404);
+        throw new NotFoundHttpException("Entity cannot be located.");
     }
 }

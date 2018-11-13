@@ -13,7 +13,7 @@ security:
             user_checker: App\Service\UserChecker
             guard:
                 authenticators:
-                    - App\WeChatAuthentication\WeChatAuthenticator
+                    - App\Authenticator\WeChatAuthenticator
         main:
             anonymous: ~
             provider: db_provider

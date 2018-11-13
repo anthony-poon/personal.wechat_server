@@ -6,7 +6,7 @@
  * Time: 11:35 AM
  */
 
-namespace App\Authenticatior;
+namespace App\Authenticator;
 
 use App\Entity\Base\SecurityGroup;
 use App\Entity\Base\User;
@@ -15,56 +15,40 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
+use Symfony\Component\Security\Core\Encoder\UserPasswordEncoderInterface;
 use Symfony\Component\Security\Core\Exception\AuthenticationException;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Security\Core\User\UserProviderInterface;
 use Symfony\Component\Security\Guard\AbstractGuardAuthenticator;
 
-class WeChatAuthenticator extends AbstractGuardAuthenticator {
-    private $em;
-
-    public function __construct(EntityManagerInterface $em) {
-        $this->em = $em;
+class ApiAuthenticator extends AbstractGuardAuthenticator {
+    private $encoder;
+    public function __construct(UserPasswordEncoderInterface $encoder) {
+        $this->encoder = $encoder;
     }
 
     public function supports(Request $request) {
-        // Is json and have openId field
         return "security_api_login" === $request->attributes->get("_route") && $request->isMethod("POST") && $request->getContentType() === "json";
     }
 
     public function getCredentials(Request $request) {
         $json = json_decode($request->getContent(), true);
         return [
-            "openId" => $json["openId"]
+            "username" => $json["username"],
+            "password" => $json["password"]
         ];
     }
 
     public function getUser($credentials, UserProviderInterface $userProvider) {
-        if ($credentials["openId"]) {
-            $user = $this->em->getRepository(User::class)->findOneBy([
-                "weChatOpenId" => $credentials["openId"]
-            ]);
-            if (!$user) {
-                $user = new User();
-                $user->setUsername($credentials["openId"]);
-                $user->setWeChatOpenId($credentials["openId"]);
-                $user->setFullName($credentials["openId"]);
-                /* @var \App\Entity\Base\SecurityGroup $userGroup */
-                $userGroup = $this->em->getRepository(SecurityGroup::class)->findOneBy([
-                    "siteToken" => "ROLE_USER"
-                ]);
-                $userGroup->getChildren()->add($user);
-                $this->em->persist($user);
-                $this->em->persist($userGroup);
-                $this->em->flush();
-            }
+        if ($credentials["username"]) {
+            $user = $userProvider->loadUserByUsername($credentials["username"]);
             return $user;
         }
         return null;
     }
 
     public function checkCredentials($credentials, UserInterface $user) {
-        return true;
+        $this->encoder->isPasswordValid($user, $credentials["password"]);
     }
 
     public function onAuthenticationFailure(Request $request, AuthenticationException $exception) {
@@ -75,7 +59,10 @@ class WeChatAuthenticator extends AbstractGuardAuthenticator {
     }
 
     public function onAuthenticationSuccess(Request $request, TokenInterface $token, $providerKey) {
-        return null;
+        return new JsonResponse([
+            "status" => "success",
+            "message" => "Authentication successful"
+        ]);
     }
 
     public function supportsRememberMe() {
