@@ -6,7 +6,7 @@
  * Time: 11:35 AM
  */
 
-namespace App\WeChatAuthentication;
+namespace App\Authenticatior;
 
 use App\Entity\Base\SecurityGroup;
 use App\Entity\Base\User;
@@ -28,22 +28,14 @@ class WeChatAuthenticator extends AbstractGuardAuthenticator {
     }
 
     public function supports(Request $request) {
-        if ($request->getContentType() === "json") {
-            $json = json_decode($request->getContent(), true);
-            return !empty($json["openId"]) && !empty($json["nickName"]);
-        }
-        return false;
-
+        // Is json and have openId field
+        return "security_api_login" === $request->attributes->get("_route") && $request->isMethod("POST") && $request->getContentType() === "json";
     }
 
     public function getCredentials(Request $request) {
         $json = json_decode($request->getContent(), true);
-        $encrypted = base64_decode($json["encrypted"]);
-        $key = base64_decode($json["sessionKey"]);
-        $iv = base64_decode($json["iv"]);
-        $data = openssl_decrypt($encrypted, "AES-128-CBC", $key, OPENSSL_RAW_DATA, $iv);
         return [
-            "data" => $data
+            "openId" => $json["openId"]
         ];
     }
 
@@ -52,11 +44,11 @@ class WeChatAuthenticator extends AbstractGuardAuthenticator {
             $user = $this->em->getRepository(User::class)->findOneBy([
                 "weChatOpenId" => $credentials["openId"]
             ]);
-            if (!$user && isset($credentials["nickName"])) {
+            if (!$user) {
                 $user = new User();
                 $user->setUsername($credentials["openId"]);
                 $user->setWeChatOpenId($credentials["openId"]);
-                $user->setFullName($credentials["nickName"]);
+                $user->setFullName($credentials["openId"]);
                 /* @var \App\Entity\Base\SecurityGroup $userGroup */
                 $userGroup = $this->em->getRepository(SecurityGroup::class)->findOneBy([
                     "siteToken" => "ROLE_USER"

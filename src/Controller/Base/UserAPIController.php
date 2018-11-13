@@ -64,12 +64,8 @@ class UserAPIController extends Controller {
                     "siteToken" => "ROLE_USER"
                 ]);
                 $userGroup->addChild($user);
-                $store = new AbstractStoreFront();
-                $store->setName($user->getFullName()."'s Store");
-                $store->setOwner($user);
                 $em = $this->getDoctrine()->getManager();
                 $this->denyAccessUnlessGranted(UserVoter::CREATE, $user);
-                $em->persist($store);
                 $em->persist($user);
                 $em->persist($userGroup);
                 $em->flush();

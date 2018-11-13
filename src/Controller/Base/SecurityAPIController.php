@@ -8,11 +8,8 @@
 
 namespace App\Controller\Base;
 
+use App\Entity\Base\User;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
-use Symfony\Component\Form\Extension\Core\Type\PasswordType;
-use Symfony\Component\Form\Extension\Core\Type\SubmitType;
-use Symfony\Component\Form\Extension\Core\Type\TextType;
-use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Routing\Annotation\Route;
 
 class SecurityAPIController extends Controller {
@@ -22,12 +19,36 @@ class SecurityAPIController extends Controller {
      */
     public function login() {
         $user = $this->getUser();
-        return $this->json(array(
-            'id' => $user->getId(),
-            'fullName' => $user->getFullName(),
-            'username' => $user->getUsername(),
-            'roles' => $user->getRoles(),
-        ));
+        return $this->json([
+            'login' => true,
+            'user' => [
+                'id' => $user->getId(),
+                'fullName' => $user->getFullName(),
+                'username' => $user->getUsername(),
+                'openId' => $user->getWeChatOpenId(),
+            ]
+        ]);
     }
 
+    /**
+     * @Route("/api/security/login", name="security_api_get_login_status", methods={"GET"})
+     */
+    public function getLoginStatus() {
+        $user = $this->getUser();
+        if ($user instanceof User) {
+            return $this->json([
+                'login' => true,
+                'user' => [
+                    'id' => $user->getId(),
+                    'fullName' => $user->getFullName(),
+                    'username' => $user->getUsername(),
+                    'openId' => $user->getWeChatOpenId(),
+                ]
+            ]);
+        } else {
+            return $this->json([
+                "login" => false
+            ]);
+        }
+    }
 }

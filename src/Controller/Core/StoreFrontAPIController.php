@@ -9,7 +9,12 @@
 namespace App\Controller\Core;
 
 use App\Entity\Core\AbstractStoreFront;
+use App\Entity\Core\AccessConstant;
+use App\Entity\Core\Housing\HousingStoreFront;
+use App\Entity\Core\SecondHand\SecondHandItem;
+use App\Entity\Core\SecondHand\SecondHandStoreFront;
 use Symfony\Component\HttpFoundation\JsonResponse;
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 
@@ -47,6 +52,7 @@ class StoreFrontAPIController extends Controller {
             "name" => $storeFront->getName(),
             "storeItems" => []
         ];
+        $this->denyAccessUnlessGranted(AccessConstant::READ, $storeFront);
         foreach ($storeFront->getStoreItems() as $storeItem) {
             /* @var \App\Entity\Core\AbstractStoreItem $storeItem */
             $assets = [];
@@ -69,5 +75,34 @@ class StoreFrontAPIController extends Controller {
             "status" => "success",
             "storeFront" => $rtn
         ]);
+    }
+
+    /**
+     * @Route("/api/store-fronts/{id}/store-items", methods={"POST"}, requirements={"id"="\d+"})
+     */
+    public function createStoreItem(int $id, Request $request) {
+        $repo = $this->getDoctrine()->getRepository(AbstractStoreFront::class);
+        $storeFront = $repo->find($id);
+        $this->denyAccessUnlessGranted("update", $storeFront);
+        switch ($request->getContentType()) {
+            case "json":
+                switch (get_class($storeFront)) {
+                    case SecondHandStoreFront::class:
+                        $item = new SecondHandItem();
+                        $item->setStoreFront($storeFront);
+                        break;
+                    case HousingStoreFront::class:
+                        break;
+                    default:
+                        throw new \Exception("Unsupported Module");
+                        break;
+                }
+                break;
+            default:
+                var_dump($request->getContentType());
+                var_dump($request->request->all());
+                var_dump($request->files->all());
+                break;
+        }
     }
 }
