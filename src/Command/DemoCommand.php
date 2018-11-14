@@ -19,6 +19,10 @@ use App\Entity\Core\Housing\HousingStoreFront;
 use App\Entity\Core\SecondHand\SecondHandItem;
 use App\Entity\Core\SecondHand\SecondHandModule;
 use App\Entity\Core\SecondHand\SecondHandStoreFront;
+use App\Entity\Core\Ticketing\TicketingItem;
+use App\Entity\Core\Ticketing\TicketingModule;
+use App\Entity\Core\Ticketing\TicketingStoreFront;
+use DateTimeImmutable;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
@@ -98,7 +102,7 @@ class DemoCommand extends Command {
         foreach ($modules as $module) {
             switch (get_class($module)) {
                 case SecondHandModule::class:
-                    /* @var \App\Entity\Core\SecondHand\SecondHandModule $module */
+                    /* @var SecondHandModule $module */
                     $storeFront = $module->getStoreFronts()->filter(function(AbstractStoreFront $storeFront) use ($user){
                         return $storeFront->getOwner() === $user;
                     })->first();
@@ -112,12 +116,26 @@ class DemoCommand extends Command {
                     $this->em->persist($storeFront);
                     break;
                 case HousingModule::class:
-                    /* @var \App\Entity\Core\Housing\HousingModule $module */
+                    /* @var HousingModule $module */
                     $storeFront = $module->getStoreFronts()->filter(function(AbstractStoreFront $storeFront) use ($user){
                         return $storeFront->getOwner() === $user;
                     })->first();
                     if (!$storeFront) {
                         $storeFront = new HousingStoreFront();
+                        $storeFront->setOwner($user);
+                        $storeFront->setName($user->getFullName()."'s Store");
+                        $storeFront->setModule($module);
+                    }
+                    $storeFronts[] = $storeFront;
+                    $this->em->persist($storeFront);
+                    break;
+                case TicketingModule::class:
+                    /* @var TicketingModule $module */
+                    $storeFront = $module->getStoreFronts()->filter(function(AbstractStoreFront $storeFront) use ($user){
+                        return $storeFront->getOwner() === $user;
+                    })->first();
+                    if (!$storeFront) {
+                        $storeFront = new TicketingStoreFront();
                         $storeFront->setOwner($user);
                         $storeFront->setName($user->getFullName()."'s Store");
                         $storeFront->setModule($module);
@@ -146,11 +164,15 @@ class DemoCommand extends Command {
                         $item->setName($name);
                         $item->setStoreFront($storeFront);
                         $item->setDescription(get_class($item));
-                        $asset = new Asset();
-                        $asset->setNamespace(SecondHandItem::class);
-                        $asset->setMimeType("image/jpeg");
-                        $asset->setBase64($this->placeholderPic[array_rand($this->placeholderPic)]);
-                        $item->getAssets()->add($asset);
+                        $item->setPrice(rand(1,4) * 100);
+                        $item->setVisitorCount(rand(1, 10000));
+                        foreach (array_rand($this->placeholderPic, 3) as $index) {
+                            $asset = new Asset();
+                            $asset->setNamespace(SecondHandItem::class);
+                            $asset->setMimeType("image/jpeg");
+                            $asset->setBase64($this->placeholderPic[$index]);
+                            $item->getAssets()->add($asset);
+                        }
                         $this->em->persist($item);
                     }
                     $items[] = $item;
@@ -168,11 +190,47 @@ class DemoCommand extends Command {
                         $item->setName($name);
                         $item->setStoreFront($storeFront);
                         $item->setDescription(get_class($item));
-                        $asset = new Asset();
-                        $asset->setNamespace(HousingItem::class);
-                        $asset->setMimeType("image/jpeg");
-                        $asset->setBase64($this->placeholderPic[array_rand($this->placeholderPic)]);
-                        $item->getAssets()->add($asset);
+                        $item->setPrice(rand(1,4) * 100);
+                        $item->setVisitorCount(rand(1, 10000));
+                        $item->setLocation("_location");
+                        $item->setDuration(rand(10, 730));
+                        $item->setPropertyType("_type_1");
+                        foreach (array_rand($this->placeholderPic, 3) as $index) {
+                            $asset = new Asset();
+                            $asset->setNamespace(SecondHandItem::class);
+                            $asset->setMimeType("image/jpeg");
+                            $asset->setBase64($this->placeholderPic[$index]);
+                            $item->getAssets()->add($asset);
+                        }
+                        $this->em->persist($item);
+                    }
+                    $items[] = $item;
+                }
+                break;
+            case TicketingStoreFront::class:
+                /* @var HousingStoreFront $storeFront */
+                for ($i = 1; $i <= self::DEMO_STORE_ITEM_COUNT; $i ++) {
+                    $name = "_ticketing_item_$i";
+                    $item = $storeFront->getStoreItems()->filter(function(HousingItem $item) use ($name) {
+                        return $item->getName() === $name;
+                    })->first();
+                    if (!$item) {
+                        $item = new TicketingItem();
+                        $item->setName($name);
+                        $item->setStoreFront($storeFront);
+                        $item->setDescription(get_class($item));
+                        $item->setPrice(rand(1,4) * 100);
+                        $item->setVisitorCount(rand(1, 10000));
+                        $date = new DateTimeImmutable();
+                        $offset = rand(1, 720);
+                        $item->setValidTill($date->modify("+$offset day"));
+                        foreach (array_rand($this->placeholderPic, 3) as $index) {
+                            $asset = new Asset();
+                            $asset->setNamespace(SecondHandItem::class);
+                            $asset->setMimeType("image/jpeg");
+                            $asset->setBase64($this->placeholderPic[$index]);
+                            $item->getAssets()->add($asset);
+                        }
                         $this->em->persist($item);
                     }
                     $items[] = $item;

@@ -8,10 +8,13 @@
 
 namespace App\Controller\Core;
 
+use App\Entity\Base\Asset;
 use App\Entity\Core\AbstractStoreFront;
+use App\Entity\Core\Housing\HousingItem;
 use App\Entity\Core\Housing\HousingStoreFront;
 use App\Entity\Core\SecondHand\SecondHandItem;
 use App\Entity\Core\SecondHand\SecondHandStoreFront;
+use App\Entity\Core\Ticketing\TicketingItem;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
@@ -55,19 +58,38 @@ class StoreFrontAPIController extends Controller {
         ];
         foreach ($storeFront->getStoreItems() as $storeItem) {
             /* @var \App\Entity\Core\AbstractStoreItem $storeItem */
-            $assets = [];
-            foreach ($storeItem->getAssets() as $asset) {
-                /* @var \App\Entity\Base\Asset $asset */
-                $assets[] = $this->generateUrl("api_asset_get_item", [
-                    "id" => $asset->getId()
-                ], UrlGeneratorInterface::ABSOLUTE_URL);
-            }
-            $rtn["storeItems"][] = [
+
+            $arr = [
                 "id" => $storeItem->getId(),
                 "name" => $storeItem->getName(),
                 "description" => $storeItem->getDescription(),
-                "assets" => $assets
+                "price" => $storeItem->getPrice(),
+                "visitorCount" => $storeItem->getVisitorCount() + $storeItem->getVisitorCountModification(),
+                "assets" => $storeItem->getAssets()->map(function(Asset $asset){
+                    return $this->generateUrl("api_asset_get_item", [
+                        "id" => $asset->getId()
+                    ], UrlGeneratorInterface::ABSOLUTE_URL);
+                })->toArray(),
             ];
+            switch (get_class($storeItem)) {
+                case SecondHandItem::class:
+                    /* @var SecondHandItem $storeItem */
+                    $arr["itemType"] = "SecondHandItem";
+                    break;
+                case HousingItem::class:
+                    /* @var HousingItem $storeItem */
+                    $arr["itemType"] = "HousingItem";
+                    $arr["location"] = $storeItem->getLocation();
+                    $arr["propertyType"] = $storeItem->getPropertyType();
+                    $arr["durationDay"] = $storeItem->getDuration();
+                    break;
+                case TicketingItem::class:
+                    /* @var TicketingItem $storeItem */
+                    $arr["itemType"] = "TicketingItem";
+                    $arr["validTill"] = $storeItem->getValidTill()->format("Y-m-d");
+                    break;
+            }
+            $rtn["storeItems"][] = $arr;
         }
         return new JsonResponse($rtn);
     }

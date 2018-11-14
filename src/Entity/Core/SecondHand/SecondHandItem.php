@@ -19,5 +19,4 @@ use Doctrine\ORM\Mapping as ORM;
  * @ORM\Entity()
  */
 class SecondHandItem extends AbstractStoreItem {
-
 }

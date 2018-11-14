@@ -8,6 +8,7 @@ use App\Entity\Core\AbstractModule;
 use App\Entity\Core\Location;
 use App\Entity\Core\Housing\HousingModule;
 use App\Entity\Core\SecondHand\SecondHandModule;
+use App\Entity\Core\Ticketing\TicketingModule;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
@@ -60,7 +61,8 @@ class InitCommand extends Command {
 
         $defaultModules = [
             SecondHandModule::class,
-            HousingModule::class
+            HousingModule::class,
+            TicketingModule::class
         ];
         $modules = [];
         foreach ($defaultModules as $defaultModule) {

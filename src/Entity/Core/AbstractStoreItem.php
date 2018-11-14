@@ -60,6 +60,30 @@ abstract class AbstractStoreItem {
     private $storeFront;
 
     /**
+     * @var float
+     * @ORM\Column(type="float")
+     */
+    private $price = 0.0;
+
+    /**
+     * @var bool
+     * @ORM\Column(type="boolean")
+     */
+    private $isTraded = false;
+
+    /**
+     * @var int
+     * @ORM\Column(type="integer")
+     */
+    private $visitorCount = 0;
+
+    /**
+     * @var int
+     * @ORM\Column(type="integer")
+     */
+    private $visitorCountModification = 0;
+
+    /**
      * @return AbstractStoreFront
      */
     public function getStoreFront(): AbstractStoreFront {
@@ -115,5 +139,69 @@ abstract class AbstractStoreItem {
      */
     public function getAssets(): Collection {
         return $this->assets;
+    }
+
+    /**
+     * @return float
+     */
+    public function getPrice(): float {
+        return $this->price;
+    }
+
+    /**
+     * @param float $price
+     * @return AbstractStoreItem
+     */
+    public function setPrice(float $price): AbstractStoreItem {
+        $this->price = $price;
+        return $this;
+    }
+
+    /**
+     * @return bool
+     */
+    public function isTraded(): bool {
+        return $this->isTraded;
+    }
+
+    /**
+     * @param bool $isTraded
+     * @return AbstractStoreItem
+     */
+    public function setIsTraded(bool $isTraded): AbstractStoreItem {
+        $this->isTraded = $isTraded;
+        return $this;
+    }
+
+    /**
+     * @return int
+     */
+    public function getVisitorCount(): int {
+        return $this->visitorCount;
+    }
+
+    /**
+     * @param int $visitorCount
+     * @return AbstractStoreItem
+     */
+    public function setVisitorCount(int $visitorCount): AbstractStoreItem {
+        $this->visitorCount = $visitorCount;
+        return $this;
+    }
+
+    /**
+     * @return int
+     */
+    public function getVisitorCountModification(): int {
+        return $this->visitorCountModification;
+    }
+
+    /**
+     * @param int $visitorCountModification
+     * @return AbstractStoreItem
+     */
+    public function setVisitorCountModification(int $visitorCountModification): AbstractStoreItem {
+        $this->visitorCountModification = $visitorCountModification;
+        return $this;
     }
 }

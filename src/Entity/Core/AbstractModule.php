@@ -37,7 +37,7 @@ abstract class AbstractModule{
 
     /**
      * @var Collection
-     * @ORM\OneToMany(targetEntity="AbstractStoreFront", mappedBy="module")
+     * @ORM\OneToMany(targetEntity="AbstractStoreFront", mappedBy="module", cascade={"remove"})
      */
     private $storeFronts;
 

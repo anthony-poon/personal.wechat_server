@@ -15,6 +15,8 @@ use App\Entity\Core\Housing\HousingStoreFront;
 use App\Entity\Core\SecondHand\SecondHandItem;
 use App\Entity\Core\SecondHand\SecondHandModule;
 use App\Entity\Core\SecondHand\SecondHandStoreFront;
+use App\Entity\Core\Ticketing\TicketingModule;
+use App\Entity\Core\Ticketing\TicketingStoreFront;
 use App\Exception\ValidationException;
 use App\Service\JsonValidator;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -83,6 +85,15 @@ class PersonalAPIController extends Controller {
                     "name" => new Assert\NotBlank()
                 ]);
                 $storeFront = new HousingStoreFront();
+                $storeFront->setModule($module);
+                $storeFront->setName($json["name"]);
+                $storeFront->setOwner($user);
+                break;
+            case TicketingModule::class:
+                $validator->validate($json, [
+                    "name" => new Assert\NotBlank()
+                ]);
+                $storeFront = new TicketingStoreFront();
                 $storeFront->setModule($module);
                 $storeFront->setName($json["name"]);
                 $storeFront->setOwner($user);
