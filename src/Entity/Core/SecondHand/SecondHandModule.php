@@ -21,22 +21,7 @@ use Doctrine\ORM\Mapping as ORM;
  * @ORM\Entity()
  */
 class SecondHandModule extends AbstractModule {
-
-    /**
-     * @var Collection
-     * @ORM\OneToMany(targetEntity="SecondHandStoreFront", mappedBy="module")
-     */
-    private $storeFronts;
-
-    public function __construct() {
-        $this->storeFronts = new ArrayCollection();
-    }
-
     public function getName(): string {
         return "二手交易";
-    }
-
-    public function getStoreFronts(): Collection {
-        return $this->storeFronts;
     }
 }

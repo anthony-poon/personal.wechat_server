@@ -17,7 +17,9 @@ use Symfony\Component\Validator\Constraints as Assert;
 /**
  * Class AbstractStoreItem
  * @package App\Entity\Core
- * @ORM\Table(name="abstract_store_front")
+ * @ORM\Table(name="abstract_store_front", uniqueConstraints={
+ *     @ORM\UniqueConstraint(name="UNIQUE_OWNER_MODULE", columns={"owner_id", "module_id"})
+ * })
  * @ORM\Entity()
  * @ORM\InheritanceType("JOINED")
  * @ORM\DiscriminatorColumn(name="store_front_type", type="string")
@@ -35,13 +37,28 @@ abstract class AbstractStoreFront {
      * @var User
      * @ORM\ManyToOne(targetEntity="\App\Entity\Base\User", inversedBy="store")
      */
-    private $owner;
+    protected $owner;
 
     /**
      * @var string
      * @ORM\Column(type="string", length=64)
      */
     private $name;
+
+    /**
+     * @var AbstractModule
+     * @ORM\ManyToOne(targetEntity="AbstractModule", inversedBy="storeFronts")
+     */
+    private $module;
+    /**
+     * @var Collection
+     * @ORM\OneToMany(targetEntity="AbstractStoreItem", mappedBy="storeFront", cascade={"remove"})
+     */
+    private $storeItems;
+
+    public function __construct() {
+        $this->storeItems = new ArrayCollection();
+    }
 
     /**
      * @return int
@@ -82,9 +99,19 @@ abstract class AbstractStoreFront {
         return $this;
     }
 
-    abstract public function getModule(): AbstractModule;
+    /**
+     * @return Collection
+     */
+    public function getStoreItems(): Collection {
+        return $this->storeItems;
+    }
 
-    abstract public function setModule(AbstractModule $module): AbstractStoreFront;
+    public function getModule(): AbstractModule {
+        return $this->module;
+    }
 
-    abstract public function getStoreItems(): Collection;
+    public function setModule(AbstractModule $module): AbstractStoreFront {
+        $this->module = $module;
+        return $this;
+    }
 }

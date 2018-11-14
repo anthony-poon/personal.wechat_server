@@ -42,6 +42,7 @@ class ModuleAPIController extends Controller {
         $module = $repo->find($id);
         /* @var \App\Entity\Core\AbstractModule $module */
         $rtn = [
+            "status" => "success",
             "id" => $module->getId(),
             "name" => $module->getName(),
             "storeFronts" => []
@@ -53,10 +54,6 @@ class ModuleAPIController extends Controller {
                 "name" => $storeFront->getName(),
             ];
         }
-        return new JsonResponse([
-            "status" => "success",
-            "module" => $rtn
-        ]);
+        return new JsonResponse($rtn);
     }
-
 }

@@ -20,36 +20,4 @@ use Doctrine\ORM\Mapping as ORM;
  * @ORM\Entity()
  */
 class SecondHandStoreFront extends AbstractStoreFront {
-    /**
-     * @var SecondHandModule
-     * @ORM\ManyToOne(targetEntity="SecondHandModule", inversedBy="storeFronts")
-     */
-    private $module;
-    /**
-     * @var Collection
-     * @ORM\OneToMany(targetEntity="SecondHandItem", mappedBy="storeFront", cascade={"remove"})
-     */
-    private $storeItems;
-
-    public function __construct() {
-        $this->storeItems = new ArrayCollection();
-    }
-
-    /**
-     * @return Collection
-     */
-    public function getStoreItems(): Collection {
-        return $this->storeItems;
-    }
-
-    public function getModule(): AbstractModule {
-        return $this->module;
-    }
-
-    public function setModule(AbstractModule $module): AbstractStoreFront {
-        $this->module = $module;
-        return $this;
-    }
-
-
 }

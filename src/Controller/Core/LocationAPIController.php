@@ -42,20 +42,18 @@ class LocationAPIController extends Controller {
         $location = $repo->find($id);
         /* @var \App\Entity\Core\Location $location */
         $rtn = [
+            "status" => "success",
             "id" => $location->getId(),
             "name" => $location->getName(),
-            "module" => []
+            "modules" => []
         ];
         foreach ($location->getModules() as $module) {
             /* @var \App\Entity\Core\AbstractModule $module */
-            $rtn["module"][] = [
+            $rtn["modules"][] = [
                 "id" => $module->getId(),
                 "name" => $module->getName()
             ];
         }
-        return new JsonResponse([
-            "status" => "success",
-            "city" => $rtn
-        ]);
+        return new JsonResponse($rtn);
     }
 }

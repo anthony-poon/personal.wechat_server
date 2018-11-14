@@ -53,6 +53,24 @@ abstract class AbstractStoreItem {
      */
     private $assets;
 
+    /**
+     * @var AbstractStoreFront
+     * @ORM\ManyToOne(targetEntity="AbstractStoreFront", inversedBy="storeItems")
+     */
+    private $storeFront;
+
+    /**
+     * @return AbstractStoreFront
+     */
+    public function getStoreFront(): AbstractStoreFront {
+        return $this->storeFront;
+    }
+
+    public function setStoreFront(AbstractStoreFront $storeFront): AbstractStoreItem {
+        $this->storeFront = $storeFront;
+        return $this;
+    }
+
     public function __construct() {
         $this->assets = new ArrayCollection();
     }
@@ -98,9 +116,4 @@ abstract class AbstractStoreItem {
     public function getAssets(): Collection {
         return $this->assets;
     }
-
-    abstract function getStoreFront(): AbstractStoreFront;
-
-    abstract function setStoreFront(AbstractStoreFront $storeFront): AbstractStoreItem;
-
 }

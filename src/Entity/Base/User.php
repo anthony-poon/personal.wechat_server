@@ -18,10 +18,13 @@ use Doctrine\Common\Collections\Collection;
 
 /**
  * Class User
- * @ORM\Table(name="app_user")
+ * @ORM\Table(name="app_user", uniqueConstraints={
+ *     @ORM\UniqueConstraint(name="UNIQUE_OPEN_ID", columns={"we_chat_open_id"})
+ * })
  * @ORM\Entity(repositoryClass="App\Repository\UserRepository")
  * @UniqueEntity("username", message="Username is taken already")
  * @UniqueEntity("email", message="Email is registered already")
+ * @UniqueEntity("we_chat_open_id")
  */
 class User extends DirectoryObject implements UserInterface, \Serializable {
     /**

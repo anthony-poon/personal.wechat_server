@@ -36,6 +36,16 @@ abstract class AbstractModule{
     private $location;
 
     /**
+     * @var Collection
+     * @ORM\OneToMany(targetEntity="AbstractStoreFront", mappedBy="module")
+     */
+    private $storeFronts;
+
+    public function __construct() {
+        $this->storeFronts = new ArrayCollection();
+    }
+
+    /**
      * @return int
      */
     public function getId(): int {
@@ -58,10 +68,9 @@ abstract class AbstractModule{
         return $this;
     }
 
-    /**
-     * @return Collection
-     */
-    abstract public function getStoreFronts(): Collection;
+    public function getStoreFronts(): Collection {
+        return $this->storeFronts;
+    }
 
-    abstract public function getName(): string;
+    abstract function getName(): string;
 }

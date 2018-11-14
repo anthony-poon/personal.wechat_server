@@ -20,22 +20,7 @@ use Doctrine\ORM\Mapping as ORM;
  * @ORM\Entity()
  */
 class HousingModule extends AbstractModule {
-
-    /**
-     * @var Collection
-     * @ORM\OneToMany(targetEntity="HousingStoreFront", mappedBy="module")
-     */
-    private $storeFronts;
-
-    public function __construct() {
-        $this->storeFronts = new ArrayCollection();
-    }
-
     public function getName(): string {
         return "房屋交易";
-    }
-
-    public function getStoreFronts(): Collection {
-        return $this->storeFronts;
     }
 }

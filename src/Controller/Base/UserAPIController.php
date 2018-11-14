@@ -74,6 +74,7 @@ class UserAPIController extends Controller {
                 "fullName" => $user->getFullName(),
             ]
         ]);
+
     }
 
     /**
@@ -122,6 +123,7 @@ class UserAPIController extends Controller {
         ];
         foreach ($users as $user) {
             try {
+                /* @var User $user */
                 $this->denyAccessUnlessGranted(UserVoter::READ, $user);
                 $rtn["users"][] = [
                     "id" => $user->getId(),

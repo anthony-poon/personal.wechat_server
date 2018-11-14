@@ -20,21 +20,4 @@ use Doctrine\ORM\Mapping as ORM;
  */
 class SecondHandItem extends AbstractStoreItem {
 
-    /**
-     * @var HousingStoreFront
-     * @ORM\ManyToOne(targetEntity="SecondHandStoreFront", inversedBy="storeItems")
-     */
-    private $storeFront;
-
-    /**
-     * @return HousingStoreFront
-     */
-    public function getStoreFront(): AbstractStoreFront {
-        return $this->storeFront;
-    }
-
-    public function setStoreFront(AbstractStoreFront $storeFront): AbstractStoreItem {
-        $this->storeFront = $storeFront;
-        return $this;
-    }
 }

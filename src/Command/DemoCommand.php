@@ -81,6 +81,7 @@ class DemoCommand extends Command {
             $user = new User();
             $user->setUsername($username);
             $user->setFullName($username);
+            $user->setWeChatOpenId("_".$username);
             $userGroup->getChildren()->add($user);
         }
         $user->setPlainPassword($password);
