@@ -6,9 +6,6 @@ parameters:
     layout: 'compact'
     # menu_style: 'inline' / 'collapse'
     side_menu_style: 'collapse'
-    #app_id: wx34fcaf6b5c65d086
-    app_id: wx51dd34fe7e6876d7
-    app_secret: 2718f9c9039db9dfce3276d938593863
 
 services:
     # default configuration for services in *this* file

@@ -11,7 +11,6 @@ namespace App\Authenticator;
 use App\Entity\Base\SecurityGroup;
 use App\Entity\Base\User;
 use Doctrine\ORM\EntityManagerInterface;
-use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -26,10 +25,10 @@ class WeChatAuthenticator extends AbstractGuardAuthenticator {
     private $em;
     private $appId;
     private $appSecret;
-    public function __construct(EntityManagerInterface $em, ParameterBagInterface $bag) {
+    public function __construct(EntityManagerInterface $em) {
         $this->em = $em;
-        $this->appId = $bag->get("app_id");
-        $this->appSecret = $bag->get("app_secret");
+        $this->appId = getenv("WECHAT_APP_ID");
+        $this->appSecret = getenv("WECHAT_APP_SECRET");
 
     }
 
