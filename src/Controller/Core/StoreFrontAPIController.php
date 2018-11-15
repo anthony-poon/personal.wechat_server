@@ -21,7 +21,6 @@ use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 
 class StoreFrontAPIController extends Controller {
-    private const INDEX_PAD_LENGTH = 8;
     /**
      * @Route("/api/store-fronts", methods={"GET"})
      */
@@ -74,6 +73,8 @@ class StoreFrontAPIController extends Controller {
                         "id" => $asset->getId()
                     ], UrlGeneratorInterface::ABSOLUTE_URL);
                 })->toArray(),
+                "attr" => [
+                ]
             ];
             switch (get_class($storeItem)) {
                 case SecondHandItem::class:
@@ -81,13 +82,17 @@ class StoreFrontAPIController extends Controller {
                     break;
                 case HousingItem::class:
                     /* @var HousingItem $storeItem */
-                    $arr["location"] = $storeItem->getLocation();
-                    $arr["propertyType"] = $storeItem->getPropertyType();
-                    $arr["durationDay"] = $storeItem->getDuration();
+                    $arr["attr"]["location"]["label"] = "地區";
+                    $arr["attr"]["location"]["value"] = $storeItem->getLocation();
+                    $arr["attr"]["propertyType"]["label"] = "房形";
+                    $arr["attr"]["propertyType"]["value"] = $storeItem->getPropertyType();
+                    $arr["attr"]["durationDay"]["label"] = "時長";
+                    $arr["attr"]["durationDay"]["value"] = $storeItem->getDuration();
                     break;
                 case TicketingItem::class:
                     /* @var TicketingItem $storeItem */
-                    $arr["validTill"] = $storeItem->getValidTill()->format("Y-m-d");
+                    $arr["attr"]["validTill"]["label"] = "有效期";
+                    $arr["attr"]["validTill"]["value"] = $storeItem->getValidTill()->format("Y-m-d");
                     break;
             }
             $rtn["storeItems"][] = $arr;
