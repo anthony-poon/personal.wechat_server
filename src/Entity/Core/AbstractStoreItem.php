@@ -12,6 +12,7 @@ use App\Entity\Base\User;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Component\Validator\Constraints as Assert;
 
 /**
@@ -22,7 +23,7 @@ use Symfony\Component\Validator\Constraints as Assert;
  * @ORM\InheritanceType("JOINED")
  * @ORM\DiscriminatorColumn(name="store_item_type", type="string")
  */
-abstract class AbstractStoreItem {
+abstract class AbstractStoreItem extends PaddedId {
     /**
      * @var int
      * @ORM\Column(type="integer", length=11)
@@ -82,18 +83,6 @@ abstract class AbstractStoreItem {
      * @ORM\Column(type="integer")
      */
     private $visitorCountModification = 0;
-
-    /**
-     * @return AbstractStoreFront
-     */
-    public function getStoreFront(): AbstractStoreFront {
-        return $this->storeFront;
-    }
-
-    public function setStoreFront(AbstractStoreFront $storeFront): AbstractStoreItem {
-        $this->storeFront = $storeFront;
-        return $this;
-    }
 
     public function __construct() {
         $this->assets = new ArrayCollection();
@@ -202,6 +191,18 @@ abstract class AbstractStoreItem {
      */
     public function setVisitorCountModification(int $visitorCountModification): AbstractStoreItem {
         $this->visitorCountModification = $visitorCountModification;
+        return $this;
+    }
+
+    /**
+     * @return AbstractStoreFront
+     */
+    public function getStoreFront(): AbstractStoreFront {
+        return $this->storeFront;
+    }
+
+    public function setStoreFront(AbstractStoreFront $storeFront): AbstractStoreItem {
+        $this->storeFront = $storeFront;
         return $this;
     }
 }

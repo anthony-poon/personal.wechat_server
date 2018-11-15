@@ -19,6 +19,7 @@ use App\Entity\Core\Ticketing\TicketingModule;
 use App\Entity\Core\Ticketing\TicketingStoreFront;
 use App\Exception\ValidationException;
 use App\Service\JsonValidator;
+use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
@@ -54,14 +55,16 @@ class PersonalAPIController extends Controller {
     }
 
     /**
-     * @Route("/api/personal/modules/{id}/store-fronts", methods={"POST"}, requirements={"id"="\d+"})
+     * @Route("/api/personal/modules/{id}/store-fronts", methods={"POST"}, requirements={"id"="[\w_]+"})
      * @throws ValidationException
      * @throws \Exception
      */
-    public function createStoreFront(int $id, Request $request, JsonValidator $validator) {
+    public function createStoreFront(string $id, Request $request, JsonValidator $validator) {
         $this->denyAccessUnlessGranted("IS_AUTHENTICATED_FULLY");
         $repo = $this->getDoctrine()->getRepository(AbstractModule::class);
         /* @var \App\Entity\Core\AbstractModule $module */
+        preg_match("/^\D*0*(\d+)$$/", $id, $match);
+        $id = $match[1];
         $module = $repo->find($id);
         $user = $this->getUser();
         if ($module->getStoreFronts()->exists(function(int $key, AbstractStoreFront $storeFront) use ($user){
@@ -109,12 +112,14 @@ class PersonalAPIController extends Controller {
 
 
     /**
-     * @Route("/api/personal/store-fronts/{id}/store-items", methods={"POST"}, requirements={"id"="\d+"})
+     * @Route("/api/personal/store-fronts/{id}/store-items", methods={"POST"}, requirements={"id"="[\w_]+"})
      * @throws \Exception
      * @throws ValidationException
      */
-    public function createStoreItem(int $id, Request $request) {
+    public function createStoreItem(string $id, Request $request) {
         $repo = $this->getDoctrine()->getRepository(AbstractStoreFront::class);
+        preg_match("/^\D*0*(\d+)$$/", $id, $match);
+        $id = $match[1];
         $storeFront = $repo->find($id);
         $this->denyAccessUnlessGranted("IS_AUTHENTICATED_FULLY", $storeFront);
         $user = $this->getUser();
@@ -122,12 +127,12 @@ class PersonalAPIController extends Controller {
             case "json":
                 switch (get_class($storeFront)) {
                     case SecondHandStoreFront::class:
-                        /* @var \App\Entity\Core\SecondHand\SecondHandStoreFront $storeFront */
+                        /* @var SecondHandStoreFront $storeFront */
                         $item = new SecondHandItem();
                         $item->setStoreFront($storeFront);
                         break;
                     case HousingStoreFront::class:
-                        /* @var \App\Entity\Core\Housingcb3c\HousingStoreFront $storeFront */
+                        /* @var HousingStoreFront $storeFront */
                         break;
                     default:
                         throw new \Exception("Unsupported Module");

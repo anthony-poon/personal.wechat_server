@@ -41,5 +41,7 @@ class TicketingItem extends AbstractStoreItem {
         return $this;
     }
 
-
+    function getPrefix(): string {
+        return $this->getStoreFront()->getModule()->getPrefix();
+    }
 }

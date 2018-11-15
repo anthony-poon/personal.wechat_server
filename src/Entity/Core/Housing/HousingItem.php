@@ -84,4 +84,7 @@ class HousingItem extends AbstractStoreItem {
         $this->duration = $duration;
         return $this;
     }
+    function getPrefix(): string {
+        return $this->getStoreFront()->getModule()->getPrefix();
+    }
 }

@@ -11,6 +11,7 @@ namespace App\Entity\Core;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\HttpFoundation\ParameterBag;
 
 /**
  * Class AbstractStoreItem
@@ -20,7 +21,7 @@ use Doctrine\ORM\Mapping as ORM;
  * @ORM\InheritanceType("JOINED")
  * @ORM\DiscriminatorColumn(name="module_type", type="string")
  */
-abstract class AbstractModule{
+abstract class AbstractModule extends PaddedId {
     /**
      * @var int
      * @ORM\Column(type="integer", length=11)

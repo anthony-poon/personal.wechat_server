@@ -23,32 +23,35 @@ use Symfony\Component\Security\Guard\AbstractGuardAuthenticator;
 
 class ApiAuthenticator extends AbstractGuardAuthenticator {
     private $encoder;
-    public function __construct(UserPasswordEncoderInterface $encoder) {
+    private $em;
+    public function __construct(UserPasswordEncoderInterface $encoder, EntityManagerInterface $em) {
         $this->encoder = $encoder;
+        $this->em = $em;
     }
 
     public function supports(Request $request) {
-        return "security_api_login" === $request->attributes->get("_route") && $request->isMethod("POST") && $request->getContentType() === "json";
+        return !empty($request->headers->get("Authorization")) && "security_api_login" === $request->attributes->get("_route") && $request->isMethod("POST") && $request->getContentType() === "json";
     }
 
     public function getCredentials(Request $request) {
-        $json = json_decode($request->getContent(), true);
         return [
-            "username" => $json["username"],
-            "password" => $json["password"]
+            "username" => $request->headers->get("Authorization")
         ];
     }
 
     public function getUser($credentials, UserProviderInterface $userProvider) {
         if ($credentials["username"]) {
-            $user = $userProvider->loadUserByUsername($credentials["username"]);
+            $user = $this->em->getRepository(User::class)->findOneBy([
+                "username" => $credentials["username"]
+            ]);
             return $user;
         }
         return null;
     }
 
     public function checkCredentials($credentials, UserInterface $user) {
-        $this->encoder->isPasswordValid($user, $credentials["password"]);
+        //$this->encoder->isPasswordValid($user, $credentials["password"]);
+        return true;
     }
 
     public function onAuthenticationFailure(Request $request, AuthenticationException $exception) {

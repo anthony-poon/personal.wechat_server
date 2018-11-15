@@ -24,4 +24,8 @@ class TicketingModule extends AbstractModule {
     public function getName(): string {
         return "票务转让";
     }
+
+    function getPrefix(): string {
+        return "M3_";
+    }
 }

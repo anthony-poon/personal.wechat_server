@@ -12,6 +12,7 @@ use App\Entity\Base\User;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Component\Validator\Constraints as Assert;
 
 /**
@@ -24,7 +25,7 @@ use Symfony\Component\Validator\Constraints as Assert;
  * @ORM\InheritanceType("JOINED")
  * @ORM\DiscriminatorColumn(name="store_front_type", type="string")
  */
-abstract class AbstractStoreFront {
+abstract class AbstractStoreFront extends PaddedId {
     /**
      * @var int
      * @ORM\Column(type="integer", length=11)

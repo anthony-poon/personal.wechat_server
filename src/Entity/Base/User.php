@@ -28,7 +28,7 @@ use Doctrine\Common\Collections\Collection;
  */
 class User extends DirectoryObject implements UserInterface, \Serializable {
     /**
-     * @ORM\Column(type="string", length=25, unique=true)
+     * @ORM\Column(type="string", length=512, unique=true)
      * @Assert\NotBlank()
      * @Assert\Regex(
      *      pattern="/^[\w_\.]+$/",
@@ -86,7 +86,7 @@ class User extends DirectoryObject implements UserInterface, \Serializable {
 
     /**
      * @var ?string
-     * @ORM\Column(type="string", length=512, nullable=true)
+     * @ORM\Column(type="string", length=512, nullable=true, unique=true)
      */
 	private $weChatOpenId;
 

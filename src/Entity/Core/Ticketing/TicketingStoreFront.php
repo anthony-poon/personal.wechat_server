@@ -20,4 +20,7 @@ use Doctrine\ORM\Mapping as ORM;
  * @ORM\Entity()
  */
 class TicketingStoreFront extends AbstractStoreFront {
+    function getPrefix(): string {
+        return "SF_";
+    }
 }

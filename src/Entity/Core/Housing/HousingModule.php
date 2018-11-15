@@ -23,4 +23,7 @@ class HousingModule extends AbstractModule {
     public function getName(): string {
         return "房屋转让";
     }
+    function getPrefix(): string {
+        return "M2_";
+    }
 }

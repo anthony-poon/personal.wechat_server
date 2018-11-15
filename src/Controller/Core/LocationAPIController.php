@@ -35,10 +35,12 @@ class LocationAPIController extends Controller {
     }
 
     /**
-     * @Route("/api/cities/{id}", methods={"GET"}, requirements={"id"="\d+"})
+     * @Route("/api/cities/{id}", methods={"GET"}, requirements={"id"="[\w_]+"})
      */
-    public function getLocation(int $id) {
+    public function getLocation(string $id) {
         $repo = $this->getDoctrine()->getRepository(Location::class);
+        preg_match("/^\D*0*(\d+)$$/", $id, $match);
+        $id = $match[1];
         $location = $repo->find($id);
         /* @var \App\Entity\Core\Location $location */
         $rtn = [
