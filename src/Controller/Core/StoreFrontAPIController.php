@@ -31,15 +31,13 @@ class StoreFrontAPIController extends Controller {
         foreach ($storeFronts as $storeFront) {
             /* @var \App\Entity\Core\AbstractStoreFront $storeFront */
             $rtn[] = [
-                "id" => $storeFront->getPaddedId(),
+                "id" => $storeFront->getId(),
                 "name" => $storeFront->getName(),
+                "type" => $storeFront->getType(),
                 "owner" => $storeFront->getOwner()->getFullName()
             ];
         }
-        return new JsonResponse([
-            "status" => "success",
-            "storeFronts" => $rtn
-        ]);
+        return new JsonResponse($rtn);
     }
 
     /**
@@ -54,18 +52,15 @@ class StoreFrontAPIController extends Controller {
             throw new NotFoundHttpException("Entity not found.");
         }
         /* @var \App\Entity\Core\AbstractStoreFront $storeFront */
-        $rtn = [
-            "status" => "success",
-            "id" => $storeFront->getPaddedId(),
-            "name" => $storeFront->getName(),
-            "createDate" => $storeFront->getCreateTimestamp()->format("Y-m-d H:i:s"),
-        ];
-        $storeItems = [];
+        $rtn = [];
         foreach ($storeFront->getStoreItems() as $storeItem) {
             /* @var \App\Entity\Core\AbstractStoreItem $storeItem */
             $arr = [
-                "id" => $storeItem->getPaddedId(),
+                "id" => $storeItem->getId(),
+                "type" => $storeItem->getType(),
+                "location" => $storeItem->getStoreFront()->getModule()->getLocation()->getName(),
                 "name" => $storeItem->getName(),
+                "openId" => $storeItem->getStoreFront()->getOwner()->getWeChatOpenId(),
                 "description" => $storeItem->getDescription(),
                 "price" => $storeItem->getPrice(),
                 "visitorCount" => $storeItem->getVisitorCount() + $storeItem->getVisitorCountModification(),
@@ -92,12 +87,11 @@ class StoreFrontAPIController extends Controller {
                     $arr["validTill"] = $storeItem->getValidTill()->format("Y-m-d");
                     break;
             }
-            $storeItems[] = $arr;
+            $rtn[] = $arr;
         }
-        usort($storeItems, function($arr1, $arr2) {
-            return ($arr1["createDate"] > $arr2["createDate"]) ? 1 : -1;
+        usort($rtn, function($arr1, $arr2) {
+            return ($arr1["createDate"] > $arr2["createDate"]) ? -1 : 1;
         });
-        $rtn["storeItems"] = $storeItems;
         return new JsonResponse($rtn);
     }
 }

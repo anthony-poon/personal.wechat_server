@@ -73,9 +73,34 @@ class InitCommand extends Command {
             "约克",
             "布里斯托"
         ];
+        $defaultShortStrings = [
+            'LON',
+            'LEE',
+            'SHE',
+            'SOU',
+            'LOU',
+            'BIR',
+            'NOT',
+            'LIV',
+            'CAM',
+            'OXF',
+            'MAN',
+            'NEW',
+            'GLA',
+            'EDI',
+            'COV',
+            'LEI',
+            'BAT',
+            'DUR',
+            'CAR',
+            'AND',
+            'WAR',
+            'YOR',
+            'BRI',
+        ];
         $locations = [];
-        foreach ($defaultLocations as $defaultLocation) {
-            $locations[] = $this->initLocation($defaultLocation);
+        for ($i = 0; $i < count($defaultLocations); $i ++) {
+            $locations[] = $this->initLocation($defaultLocations[$i], $defaultShortStrings[$i]);
         }
 
         $defaultModules = [
@@ -115,7 +140,7 @@ class InitCommand extends Command {
         return $gv;
     }
 
-    private function initLocation(string $name) {
+    private function initLocation(string $name, string $shortString) {
         $repo = $this->entityManager->getRepository(Location::class);
         $location = $repo->findOneBy([
             "name" => $name
@@ -123,8 +148,10 @@ class InitCommand extends Command {
         if (!$location) {
             $location = new Location();
             $location->setName($name);
-            $this->entityManager->persist($location);
+
         }
+        $location->setShortString($shortString);
+        $this->entityManager->persist($location);
         return $location;
     }
 

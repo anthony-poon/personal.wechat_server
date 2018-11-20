@@ -25,15 +25,12 @@ class ModuleAPIController extends Controller {
         foreach ($modules as $module) {
             /* @var \App\Entity\Core\AbstractModule $module */
             $rtn[] = [
-                "id" => $module->getPaddedId(),
+                "id" => $module->getId(),
+                "type" => $module->getType(),
                 "name" => $module->getName(),
-
             ];
         }
-        return new JsonResponse([
-            "status" => "success",
-            "modules" => $rtn
-        ]);
+        return new JsonResponse($rtn);
     }
 
     /**
@@ -45,17 +42,13 @@ class ModuleAPIController extends Controller {
         $id = $match[1];
         $module = $repo->find($id);
         /* @var AbstractModule $module */
-        $rtn = [
-            "id" => $module->getPaddedId(),
-            "status" => "success",
-            "name" => $module->getName(),
-            "storeFronts" => []
-        ];
+        $rtn = [];
         foreach ($module->getStoreFronts() as $storeFront) {
             /* @var \App\Entity\Core\AbstractStoreFront $storeFront */
-            $rtn["storeFronts"][] = [
-                "id" => $storeFront->getPaddedId(),
+            $rtn[] = [
+                "id" => $storeFront->getId(),
                 "name" => $storeFront->getName(),
+                "type" => $storeFront->getType(),
             ];
         }
         return new JsonResponse($rtn);

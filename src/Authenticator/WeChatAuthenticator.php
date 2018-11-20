@@ -39,6 +39,9 @@ class WeChatAuthenticator extends AbstractGuardAuthenticator {
     }
 
     public function getCredentials(Request $request) {
+        if (rand(0,10) > 5) {
+            throw new \Exception("Random Error");
+        }
         $json = json_decode($request->getContent(), true);
         $token = $this->getToken($json["code"]);
         $userInfo = $this->decodeUserInfo($json["encrypted"], $json["iv"], $token);

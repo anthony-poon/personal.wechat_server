@@ -8,6 +8,7 @@
 
 namespace App\Controller\Core;
 
+use App\Entity\Base\Asset;
 use App\Entity\Base\User;
 use App\Entity\Core\AbstractModule;
 use App\Entity\Core\AbstractStoreFront;
@@ -15,6 +16,7 @@ use App\Entity\Core\AbstractStoreItem;
 use App\Entity\Core\Housing\HousingItem;
 use App\Entity\Core\Housing\HousingModule;
 use App\Entity\Core\Housing\HousingStoreFront;
+use App\Entity\Core\PaddedId;
 use App\Entity\Core\SecondHand\SecondHandItem;
 use App\Entity\Core\SecondHand\SecondHandModule;
 use App\Entity\Core\SecondHand\SecondHandStoreFront;
@@ -97,13 +99,11 @@ class PersonalAPIController extends Controller {
         $this->denyAccessUnlessGranted("IS_AUTHENTICATED_FULLY");
         $user = $this->getUser();
         $id = $request->query->get("id");
-        preg_match("/^(\D)*0*(\d+)$/", $id, $match);
-        $prefix = $match[1];
-        $id = $match[2];
-        if (substr($prefix,0 ,1) === "M") {
+        $parsed = PaddedId::unpad($id);
+        if (substr($parsed["prefix"],0 ,1) === "M") {
             // ID is a module id
             /* @var AbstractModule $module */
-            $module = $this->getDoctrine()->getRepository(AbstractModule::class)->find($id);
+            $module = $this->getDoctrine()->getRepository(AbstractModule::class)->find($parsed["id"]);
             if ($module) {
                 // Check if owner have a store in the module, if not create one
                 $storeFront = $module->getStoreFronts()->filter(function(AbstractStoreFront $storeFront) use ($user){
@@ -116,20 +116,13 @@ class PersonalAPIController extends Controller {
                 }
             }
         } else {
-            $storeFront = $this->getDoctrine()->getRepository(AbstractStoreFront::class)->find($id);
+            $storeFront = $this->getDoctrine()->getRepository(AbstractStoreFront::class)->find($parsed["id"]);
         }
         if (empty($storeFront)) {
             throw new NotFoundHttpException("Entity not found.");
         }
         // Need to validate data later
-        switch ($request->getContentType()) {
-            case "json":
-                $data = json_decode($request->getContent(), true);
-                break;
-            default:
-                $data = $request->request->all();
-                break;
-        }
+        $data = json_decode($request->getContent(), true);
         $storeItem = $this->createStoreItemEntity($storeFront, $data);
         /* @var $item \App\Entity\Core\AbstractStoreItem */
         $storeItem->setStoreFront($storeFront);
@@ -142,6 +135,10 @@ class PersonalAPIController extends Controller {
         $em->persist($storeFront);
         $em->persist($storeItem);
         $em->flush();
+        return new JsonResponse([
+            "status" => "success",
+            "id" => $storeItem->getId()
+        ]);
     }
 
     private function createStoreFrontEntity(AbstractModule $module, User $user, array $data): AbstractStoreFront {
@@ -187,5 +184,33 @@ class PersonalAPIController extends Controller {
                 break;
         }
         return $item;
+    }
+
+    /**
+     * @Route("/api/personal/store-items/{id}/assets", methods={"POST"})
+     * @throws \Exception
+     * @throws ValidationException
+     */
+    public function uploadAsset($id, Request $request) {
+        $this->denyAccessUnlessGranted("IS_AUTHENTICATED_FULLY");
+        $repo = $this->getDoctrine()->getRepository(AbstractStoreItem::class);
+        $id = PaddedId::unpad($id)["id"];
+        /* @var \App\Entity\Core\AbstractStoreItem $storeItem */
+        $storeItem = $repo->find($id);
+        /* @var \Symfony\Component\HttpFoundation\File\UploadedFile $file */
+        $file = array_values($request->files->all())[0];
+        $base64 = base64_encode(file_get_contents($file->getPath()));
+        $asset = new Asset();
+        $asset->setNamespace(get_class($storeItem));
+        $asset->setMimeType($file->getMimeType());
+        $asset->setBase64($base64);
+        $storeItem->getAssets()->add($asset);
+        $em = $this->getDoctrine()->getManager();
+        $em->persist($storeItem);
+        $em->persist($asset);
+        $em->flush();
+        return new JsonResponse([
+            "status" => "success"
+        ]);
     }
 }

@@ -129,4 +129,10 @@ abstract class AbstractStoreFront extends PaddedId {
     public function getCreateTimestamp(): \DateTimeInterface {
         return $this->createTimestamp;
     }
+
+    public function getType() {
+        $class = get_class($this);
+        preg_match('/(\w+)$/', $class, $match);
+        return $match[1];
+    }
 }

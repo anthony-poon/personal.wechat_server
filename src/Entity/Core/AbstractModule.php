@@ -73,4 +73,10 @@ abstract class AbstractModule extends PaddedId {
     }
 
     abstract function getName(): string;
+
+    public function getType() {
+        $class = get_class($this);
+        preg_match('/(\w+)$/', $class, $match);
+        return $match[1];
+    }
 }

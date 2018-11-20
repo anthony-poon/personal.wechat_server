@@ -34,6 +34,12 @@ class Location {
     private $name;
 
     /**
+     * @var ?string
+     * @@ORM\Column(type="string", length=32, nullable=true)
+     */
+    private $shortString;
+
+    /**
      * @var Collection
      * @ORM\OneToMany(targetEntity="AbstractModule", mappedBy="location")
      */
@@ -73,5 +79,16 @@ class Location {
         return $this->modules;
     }
 
+    public function getShortString(): ?string {
+        return $this->shortString;
+    }
 
+    /**
+     * @param string $shortString
+     * @return Location
+     */
+    public function setShortString(string $shortString) {
+        $this->shortString = $shortString;
+        return $this;
+    }
 }

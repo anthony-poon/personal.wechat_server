@@ -12,11 +12,7 @@ use App\Entity\Base\Asset;
 use App\Entity\Core\AbstractModule;
 use App\Entity\Core\AbstractStoreFront;
 use App\Entity\Core\AbstractStoreItem;
-use App\Entity\Core\Housing\HousingItem;
 use App\Entity\Core\PaddedId;
-use App\Entity\Core\SecondHand\SecondHandItem;
-use App\Entity\Core\Ticketing\TicketingItem;
-use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
@@ -32,9 +28,11 @@ class StoreItemAPIController extends Controller{
         $query = $request->query->all();
         if (array_key_exists("module", $query) && $query["module"]) {
             $repo = $this->getDoctrine()->getRepository(AbstractModule::class);
-            $parse = PaddedId::unpad($query["module"]);
-            $id = $parse["id"];
+            $id = (int) $query["module"];
             $module = $repo->find($id);
+            if (!$module) {
+                throw new NotFoundHttpException("Cannot find module");
+            }
             $rtn = [];
             /* @var AbstractModule $module */
             foreach ($module->getStoreFronts() as $storeFront) {
@@ -42,7 +40,8 @@ class StoreItemAPIController extends Controller{
                 foreach ($storeFront->getStoreItems() as $storeItem) {
                     /* @var AbstractStoreItem $storeItem */
                     $rtn[] = [
-                        "id" => $storeItem->getPaddedId(),
+                        "id" => $storeItem->getId(),
+                        "type" => $storeItem->getType(),
                         "name" => $storeItem->getName(),
                         "createDate" => $storeItem->getCreateTimestamp()->format("Y-m-d H:i:s"),
                         "price" => $storeItem->getPrice(),
@@ -56,12 +55,9 @@ class StoreItemAPIController extends Controller{
                 }
             }
             usort($rtn, function($arr1, $arr2) {
-                return ($arr1["createDate"] > $arr2["createDate"]) ? 1 : -1;
+                return ($arr1["createDate"] > $arr2["createDate"]) ? -1 : 1;
             });
-            return new JsonResponse([
-                "status" => "success",
-                "storeItems" => $rtn
-            ]);
+            return new JsonResponse($rtn);
         }
         throw new \Exception("Unsupported Methods");
     }

@@ -25,6 +25,7 @@ class LocationAPIController extends Controller {
             /* @var \App\Entity\Core\Location $location */
             $rtn[] = [
                 "id" => $location->getId(),
+                "shortString" => $location->getShortString(),
                 "name" => $location->getName()
             ];
         }
@@ -43,17 +44,14 @@ class LocationAPIController extends Controller {
         $id = $match[1];
         $location = $repo->find($id);
         /* @var \App\Entity\Core\Location $location */
-        $rtn = [
-            "status" => "success",
-            "id" => $location->getId(),
-            "name" => $location->getName(),
-            "modules" => []
-        ];
+        $rtn = [];
         foreach ($location->getModules() as $module) {
             /* @var \App\Entity\Core\AbstractModule $module */
-            $rtn["modules"][] = [
+            $rtn[] = [
                 "id" => $module->getId(),
-                "name" => $module->getName()
+                "location" => $location->getName(),
+                "name" => $module->getName(),
+                "img"=> "/images/nothing.png"
             ];
         }
         return new JsonResponse($rtn);
