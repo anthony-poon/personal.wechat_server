@@ -57,6 +57,13 @@ abstract class AbstractStoreFront extends PaddedId {
      */
     private $storeItems;
 
+    /**
+     * @ORM\Column(type="datetime")
+     * @ORM\Version
+     * @var \DateTimeInterface
+     */
+    private $createTimestamp;
+
     public function __construct() {
         $this->storeItems = new ArrayCollection();
     }
@@ -114,5 +121,12 @@ abstract class AbstractStoreFront extends PaddedId {
     public function setModule(AbstractModule $module): AbstractStoreFront {
         $this->module = $module;
         return $this;
+    }
+
+    /**
+     * @return \DateTimeInterface
+     */
+    public function getCreateTimestamp(): \DateTimeInterface {
+        return $this->createTimestamp;
     }
 }

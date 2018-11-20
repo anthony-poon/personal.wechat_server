@@ -30,20 +30,34 @@ class ApiAuthenticator extends AbstractGuardAuthenticator {
     }
 
     public function supports(Request $request) {
-        return !empty($request->headers->get("Authorization")) && "security_api_login" === $request->attributes->get("_route") && $request->isMethod("POST") && $request->getContentType() === "json";
+        return !empty($request->headers->get("Authorization"));
     }
 
     public function getCredentials(Request $request) {
         return [
-            "username" => $request->headers->get("Authorization")
+            "openId" => $request->headers->get("Authorization")
         ];
     }
 
     public function getUser($credentials, UserProviderInterface $userProvider) {
-        if ($credentials["username"]) {
+        if ($credentials["openId"]) {
             $user = $this->em->getRepository(User::class)->findOneBy([
-                "username" => $credentials["username"]
+                "weChatOpenId" => $credentials["openId"]
             ]);
+            if (!$user) {
+                $user = new User();
+                $user->setWeChatOpenId($credentials["openId"]);
+                /* @var \App\Entity\Base\SecurityGroup $userGroup */
+                $userGroup = $this->em->getRepository(SecurityGroup::class)->findOneBy([
+                    "siteToken" => "ROLE_USER"
+                ]);
+                $userGroup->getChildren()->add($user);
+                $this->em->persist($userGroup);
+            }
+            $user->setUsername($credentials["openId"]);
+            $user->setFullName($credentials["openId"]);
+            $this->em->persist($user);
+            $this->em->flush();
             return $user;
         }
         return null;
@@ -62,10 +76,7 @@ class ApiAuthenticator extends AbstractGuardAuthenticator {
     }
 
     public function onAuthenticationSuccess(Request $request, TokenInterface $token, $providerKey) {
-        return new JsonResponse([
-            "status" => "success",
-            "message" => "Authentication successful"
-        ]);
+        return null;
     }
 
     public function supportsRememberMe() {
@@ -78,6 +89,4 @@ class ApiAuthenticator extends AbstractGuardAuthenticator {
             "message" => "API Authentication Required"
         ], Response::HTTP_UNAUTHORIZED);
     }
-
-
 }

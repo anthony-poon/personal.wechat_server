@@ -8,6 +8,7 @@ use App\Entity\Core\AbstractModule;
 use App\Entity\Core\Location;
 use App\Entity\Core\Housing\HousingModule;
 use App\Entity\Core\SecondHand\SecondHandModule;
+use App\Entity\Core\GlobalValue;
 use App\Entity\Core\Ticketing\TicketingModule;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Console\Command\Command;
@@ -48,11 +49,29 @@ class InitCommand extends Command {
 
         $output->writeln("Creating Location Data");
         $defaultLocations = [
-            "_location_1",
-            "_location_2",
-            "_location_3",
-            "_location_4",
-            "_location_5",
+            "伦敦",
+            "利兹",
+            "谢菲尔德",
+            "南安普顿",
+            "拉夫堡",
+            "伯明翰",
+            "诺丁汉",
+            "利物浦",
+            "剑桥",
+            "牛津,",
+            "曼彻斯特",
+            "纽卡斯尔",
+            "格拉斯哥",
+            "爱丁堡",
+            "考文垂",
+            "莱斯特",
+            "巴斯",
+            "杜伦",
+            "卡迪夫",
+            "圣安德鲁斯",
+            "华威",
+            "约克",
+            "布里斯托"
         ];
         $locations = [];
         foreach ($defaultLocations as $defaultLocation) {
@@ -68,6 +87,13 @@ class InitCommand extends Command {
         foreach ($defaultModules as $defaultModule) {
             $modules[] = $this->initModule($locations, $defaultModule);
         }
+
+        $defaultGlobals = [
+            "visitorCount" => "0",
+        ];
+        foreach ($defaultGlobals as $key => $value) {
+            $this->initGlobalValue($key, $value);
+        }
         $this->entityManager->persist($adminGroup);
         $this->entityManager->persist($userGroup);
         $this->entityManager->persist($root);
@@ -75,7 +101,19 @@ class InitCommand extends Command {
         $this->entityManager->flush();
     }
 
-
+    private function initGlobalValue(string $key, string $value) {
+        $repo = $this->entityManager->getRepository(GlobalValue::class);
+        $gv = $repo->findOneBy([
+            "key" => $key
+        ]);
+        if (!$gv) {
+            $gv = new GlobalValue();
+            $gv->setKey($key);
+        }
+        $gv->setValue($value);
+        $this->entityManager->persist($gv);
+        return $gv;
+    }
 
     private function initLocation(string $name) {
         $repo = $this->entityManager->getRepository(Location::class);

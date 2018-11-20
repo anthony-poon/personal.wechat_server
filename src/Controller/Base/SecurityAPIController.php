@@ -10,6 +10,8 @@ namespace App\Controller\Base;
 
 use App\Entity\Base\User;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
+use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Session\Session;
 use Symfony\Component\Routing\Annotation\Route;
 
 class SecurityAPIController extends Controller {

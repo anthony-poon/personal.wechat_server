@@ -84,6 +84,19 @@ abstract class AbstractStoreItem extends PaddedId {
      */
     private $visitorCountModification = 0;
 
+    /**
+     * @var boolean
+     * @ORM\Column(type="boolean")
+     */
+    private $isActive = 1;
+
+    /**
+     * @ORM\Column(type="datetime")
+     * @ORM\Version
+     * @var \DateTimeInterface
+     */
+    private $createTimestamp;
+
     public function __construct() {
         $this->assets = new ArrayCollection();
     }
@@ -204,5 +217,26 @@ abstract class AbstractStoreItem extends PaddedId {
     public function setStoreFront(AbstractStoreFront $storeFront): AbstractStoreItem {
         $this->storeFront = $storeFront;
         return $this;
+    }
+
+    /**
+     * @return bool
+     */
+    public function isActive(): bool {
+        return $this->isActive;
+    }
+
+    /**
+     * @param bool $isActive
+     */
+    public function setIsActive(bool $isActive): void {
+        $this->isActive = $isActive;
+    }
+
+    /**
+     * @return \DateTimeInterface
+     */
+    public function getCreateTimestamp(): \DateTimeInterface {
+        return $this->createTimestamp;
     }
 }

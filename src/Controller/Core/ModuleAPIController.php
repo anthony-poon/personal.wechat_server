@@ -48,7 +48,6 @@ class ModuleAPIController extends Controller {
         $rtn = [
             "id" => $module->getPaddedId(),
             "status" => "success",
-            "id" => $module->getId(),
             "name" => $module->getName(),
             "storeFronts" => []
         ];

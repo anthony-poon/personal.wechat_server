@@ -97,7 +97,7 @@ class PersonalAPIController extends Controller {
         $this->denyAccessUnlessGranted("IS_AUTHENTICATED_FULLY");
         $user = $this->getUser();
         $id = $request->query->get("id");
-        preg_match("/^(\D)*0*(\d+)$$/", $id, $match);
+        preg_match("/^(\D)*0*(\d+)$/", $id, $match);
         $prefix = $match[1];
         $id = $match[2];
         if (substr($prefix,0 ,1) === "M") {

@@ -10,10 +10,12 @@ namespace App\Authenticator;
 
 use App\Entity\Base\SecurityGroup;
 use App\Entity\Base\User;
+use App\Entity\Core\GlobalValue;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpFoundation\Session\Session;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
 use Symfony\Component\Security\Core\Exception\AuthenticationException;
 use Symfony\Component\Security\Core\User\UserInterface;
@@ -29,7 +31,6 @@ class WeChatAuthenticator extends AbstractGuardAuthenticator {
         $this->em = $em;
         $this->appId = getenv("WECHAT_APP_ID");
         $this->appSecret = getenv("WECHAT_APP_SECRET");
-
     }
 
     public function supports(Request $request) {
@@ -41,7 +42,6 @@ class WeChatAuthenticator extends AbstractGuardAuthenticator {
         $json = json_decode($request->getContent(), true);
         $token = $this->getToken($json["code"]);
         $userInfo = $this->decodeUserInfo($json["encrypted"], $json["iv"], $token);
-        //var_dump($userInfo);
         return $userInfo;
     }
 
@@ -103,7 +103,30 @@ class WeChatAuthenticator extends AbstractGuardAuthenticator {
     }
 
     public function onAuthenticationSuccess(Request $request, TokenInterface $token, $providerKey) {
-        return null;
+        $user = $token->getUser();
+        $session = new Session();
+        $session->start();
+        $session->set("openId", $user->getWeChatOpenId());
+        $repo = $this->em->getRepository(GlobalValue::class);
+        /* @var GlobalValue $gv */
+        $gv = $repo->findOneBy([
+            "key" => "visitorCount"
+        ]);
+        $count = (int) $gv->getValue() + 1;
+        $gv->setValue($count);
+        $this->em->persist($gv);
+        $this->em->flush();
+        return new JsonResponse([
+            'login' => true,
+            'sessionId' => $session->getId(),
+            'visitorCount' => $count,
+            'user' => [
+                'id' => $user->getId(),
+                'fullName' => $user->getFullName(),
+                'username' => $user->getUsername(),
+                'openId' => $user->getWeChatOpenId(),
+            ]
+        ]);
     }
 
     public function supportsRememberMe() {

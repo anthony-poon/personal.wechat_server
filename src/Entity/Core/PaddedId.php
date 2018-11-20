@@ -19,4 +19,15 @@ abstract class PaddedId {
     abstract function getId(): int;
 
     abstract function getPrefix(): string;
+
+    static function unpad(string $padded): array {
+        $success = preg_match("/^(\D)*0*(\d+)$/", $padded, $match);
+        if ($success) {
+            return [
+                "prefix" => $match[1] ?? null,
+                "id" => (int) $match[2]
+            ];
+        }
+        throw new \Exception("Unable to parse id");
+    }
 }

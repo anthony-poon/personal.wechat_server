@@ -24,7 +24,7 @@ class StoreFrontAPIController extends Controller {
     /**
      * @Route("/api/store-fronts", methods={"GET"})
      */
-    public function getStoreFronts(ParameterBagInterface $bag) {
+    public function getStoreFronts() {
         $repo = $this->getDoctrine()->getRepository(AbstractStoreFront::class);
         $storeFronts = $repo->findAll();
         $rtn = [];
@@ -58,8 +58,9 @@ class StoreFrontAPIController extends Controller {
             "status" => "success",
             "id" => $storeFront->getPaddedId(),
             "name" => $storeFront->getName(),
-            "storeItems" => []
+            "createDate" => $storeFront->getCreateTimestamp()->format("Y-m-d H:i:s"),
         ];
+        $storeItems = [];
         foreach ($storeFront->getStoreItems() as $storeItem) {
             /* @var \App\Entity\Core\AbstractStoreItem $storeItem */
             $arr = [
@@ -68,13 +69,13 @@ class StoreFrontAPIController extends Controller {
                 "description" => $storeItem->getDescription(),
                 "price" => $storeItem->getPrice(),
                 "visitorCount" => $storeItem->getVisitorCount() + $storeItem->getVisitorCountModification(),
+                "createDate" => $storeItem->getCreateTimestamp()->format("Y-m-d H:i:s"),
+                "isTraded" => $storeItem->isTraded(),
                 "assets" => $storeItem->getAssets()->map(function(Asset $asset){
                     return $this->generateUrl("api_asset_get_item", [
                         "id" => $asset->getId()
                     ], UrlGeneratorInterface::ABSOLUTE_URL);
-                })->toArray(),
-                "attr" => [
-                ]
+                })->toArray()
             ];
             switch (get_class($storeItem)) {
                 case SecondHandItem::class:
@@ -82,22 +83,21 @@ class StoreFrontAPIController extends Controller {
                     break;
                 case HousingItem::class:
                     /* @var HousingItem $storeItem */
-                    $arr["attr"]["location"]["label"] = "地區";
-                    $arr["attr"]["location"]["value"] = $storeItem->getLocation();
-                    $arr["attr"]["propertyType"]["label"] = "房形";
-                    $arr["attr"]["propertyType"]["value"] = $storeItem->getPropertyType();
-                    $arr["attr"]["durationDay"]["label"] = "時長";
-                    $arr["attr"]["durationDay"]["value"] = $storeItem->getDuration();
+                    $arr["location"] = $storeItem->getLocation();
+                    $arr["propertyType"] = $storeItem->getPropertyType();
+                    $arr["durationDay"] = $storeItem->getDuration();
                     break;
                 case TicketingItem::class:
                     /* @var TicketingItem $storeItem */
-                    $arr["attr"]["validTill"]["label"] = "有效期";
-                    $arr["attr"]["validTill"]["value"] = $storeItem->getValidTill()->format("Y-m-d");
+                    $arr["validTill"] = $storeItem->getValidTill()->format("Y-m-d");
                     break;
             }
-            $rtn["storeItems"][] = $arr;
+            $storeItems[] = $arr;
         }
+        usort($storeItems, function($arr1, $arr2) {
+            return ($arr1["createDate"] > $arr2["createDate"]) ? 1 : -1;
+        });
+        $rtn["storeItems"] = $storeItems;
         return new JsonResponse($rtn);
     }
-
 }
