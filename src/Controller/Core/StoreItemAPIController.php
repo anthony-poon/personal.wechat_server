@@ -12,7 +12,10 @@ use App\Entity\Base\Asset;
 use App\Entity\Core\AbstractModule;
 use App\Entity\Core\AbstractStoreFront;
 use App\Entity\Core\AbstractStoreItem;
+use App\Entity\Core\Housing\HousingItem;
 use App\Entity\Core\PaddedId;
+use App\Entity\Core\SecondHand\SecondHandItem;
+use App\Entity\Core\Ticketing\TicketingItem;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
@@ -39,19 +42,39 @@ class StoreItemAPIController extends Controller{
                 /* @var AbstractStoreFront $storeFront */
                 foreach ($storeFront->getStoreItems() as $storeItem) {
                     /* @var AbstractStoreItem $storeItem */
-                    $rtn[] = [
+                    $arr = [
                         "id" => $storeItem->getId(),
                         "type" => $storeItem->getType(),
+                        "location" => $storeItem->getStoreFront()->getModule()->getLocation()->getName(),
                         "name" => $storeItem->getName(),
-                        "createDate" => $storeItem->getCreateTimestamp()->format("Y-m-d H:i:s"),
+                        "openId" => $storeItem->getStoreFront()->getOwner()->getWeChatOpenId(),
+                        "description" => $storeItem->getDescription(),
                         "price" => $storeItem->getPrice(),
                         "visitorCount" => $storeItem->getVisitorCount() + $storeItem->getVisitorCountModification(),
+                        "createDate" => $storeItem->getCreateTimestamp()->format("Y-m-d H:i:s"),
+                        "isTraded" => $storeItem->isTraded(),
                         "assets" => $storeItem->getAssets()->map(function(Asset $asset){
                             return $this->generateUrl("api_asset_get_item", [
                                 "id" => $asset->getId()
                             ], UrlGeneratorInterface::ABSOLUTE_URL);
-                        })->toArray(),
+                        })->toArray()
                     ];
+                    switch (get_class($storeItem)) {
+                        case SecondHandItem::class:
+                            /* @var SecondHandItem $storeItem */
+                            break;
+                        case HousingItem::class:
+                            /* @var HousingItem $storeItem */
+                            $arr["location"] = $storeItem->getLocation();
+                            $arr["propertyType"] = $storeItem->getPropertyType();
+                            $arr["durationDay"] = $storeItem->getDuration();
+                            break;
+                        case TicketingItem::class:
+                            /* @var TicketingItem $storeItem */
+                            $arr["validTill"] = $storeItem->getValidTill()->format("Y-m-d");
+                            break;
+                    }
+                    $rtn[] = $arr;
                 }
             }
             usort($rtn, function($arr1, $arr2) {
