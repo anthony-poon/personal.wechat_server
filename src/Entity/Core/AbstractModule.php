@@ -11,6 +11,7 @@ namespace App\Entity\Core;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
+use JsonSerializable;
 
 /**
  * Class AbstractStoreItem
@@ -20,7 +21,7 @@ use Doctrine\ORM\Mapping as ORM;
  * @ORM\InheritanceType("JOINED")
  * @ORM\DiscriminatorColumn(name="module_type", type="string")
  */
-abstract class AbstractModule extends PaddedId {
+abstract class AbstractModule implements JsonSerializable{
     /**
      * @var int
      * @ORM\Column(type="integer", length=11)
@@ -78,5 +79,19 @@ abstract class AbstractModule extends PaddedId {
         $class = get_class($this);
         preg_match('/(\w+)$/', $class, $match);
         return $match[1];
+    }
+
+    public function jsonSerialize() {
+        $rtn = [
+            "id" => $this->getId(),
+            "type" => $this->getType(),
+            "name" => $this->getName(),
+            "location" => $this->getLocation()->getName(),
+        ];
+        return $rtn;
+    }
+
+    public function unserialize($serialized) {
+        // TODO: Implement unserialize() method.
     }
 }

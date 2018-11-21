@@ -19,7 +19,5 @@ use Doctrine\ORM\Mapping as ORM;
  * @ORM\Entity()
  */
 class SecondHandItem extends AbstractStoreItem {
-    function getPrefix(): string {
-        return $this->getStoreFront()->getModule()->getPrefix();
-    }
+
 }

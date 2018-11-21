@@ -18,7 +18,7 @@ use Doctrine\ORM\Mapping as ORM;
  * @ORM\Table(name="location")
  * @ORM\Entity()
  */
-class Location {
+class Location implements \JsonSerializable {
     /**
      * @var int
      * @ORM\Column(type="integer", length=11)
@@ -34,8 +34,8 @@ class Location {
     private $name;
 
     /**
-     * @var ?string
-     * @@ORM\Column(type="string", length=32, nullable=true)
+     * @var string
+     *  @ORM\Column(type="string", length=32, nullable=true)
      */
     private $shortString;
 
@@ -91,4 +91,16 @@ class Location {
         $this->shortString = $shortString;
         return $this;
     }
+
+    public function jsonSerialize() {
+        $rtn = [
+            "id" => $this->getId(),
+            "shortString" => $this->getShortString(),
+            "name" => $this->getName(),
+        ];
+
+        return $rtn;
+    }
+
+
 }

@@ -98,28 +98,27 @@ class PersonalAPIController extends Controller {
         /* @var User $user */
         $this->denyAccessUnlessGranted("IS_AUTHENTICATED_FULLY");
         $user = $this->getUser();
-        $id = $request->query->get("id");
-        $parsed = PaddedId::unpad($id);
-        if (substr($parsed["prefix"],0 ,1) === "M") {
-            // ID is a module id
-            /* @var AbstractModule $module */
-            $module = $this->getDoctrine()->getRepository(AbstractModule::class)->find($parsed["id"]);
-            if ($module) {
-                // Check if owner have a store in the module, if not create one
-                $storeFront = $module->getStoreFronts()->filter(function(AbstractStoreFront $storeFront) use ($user){
-                    return $storeFront->getOwner() === $user;
-                });
-                if (!$storeFront) {
-                    $storeFront = $this->createStoreFrontEntity($module, $user, [
-                        "name" => $user->getFullName()
-                    ]);
-                }
-            }
+        $storeFrontId = $request->query->get("storeFrontId");
+        $moduleId = $request->query->get("moduleId");
+        if ($storeFrontId) {
+            $storeFront = $storeFront = $this->getDoctrine()->getRepository(AbstractStoreFront::class)->find($storeFrontId);
         } else {
-            $storeFront = $this->getDoctrine()->getRepository(AbstractStoreFront::class)->find($parsed["id"]);
+            /* @var AbstractModule $module */
+            $module = $this->getDoctrine()->getRepository(AbstractModule::class)->find($moduleId);
+            if (!$module) {
+                throw new NotFoundHttpException("Invalid Module Id");
+            }
+            $storeFront = $module->getStoreFronts()->filter(function(AbstractStoreFront $storeFront) use ($user){
+                return $storeFront->getOwner() === $user;
+            });
+            if (!$storeFront) {
+                $storeFront = $this->createStoreFrontEntity($module, $user, [
+                    "name" => $user->getFullName()
+                ]);
+            }
         }
         if (empty($storeFront)) {
-            throw new NotFoundHttpException("Entity not found.");
+            throw new NotFoundHttpException("Store Front not found.");
         }
         // Need to validate data later
         $data = json_decode($request->getContent(), true);
@@ -135,10 +134,7 @@ class PersonalAPIController extends Controller {
         $em->persist($storeFront);
         $em->persist($storeItem);
         $em->flush();
-        return new JsonResponse([
-            "status" => "success",
-            "id" => $storeItem->getId()
-        ]);
+        return new JsonResponse($storeItem);
     }
 
     private function createStoreFrontEntity(AbstractModule $module, User $user, array $data): AbstractStoreFront {

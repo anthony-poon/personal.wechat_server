@@ -8,12 +8,10 @@
 
 namespace App\Entity\Core;
 
-use App\Entity\Base\User;
+use App\Entity\Base\Asset;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
-use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
-use Symfony\Component\Validator\Constraints as Assert;
 
 /**
  * Class AbstractStoreItem
@@ -23,7 +21,7 @@ use Symfony\Component\Validator\Constraints as Assert;
  * @ORM\InheritanceType("JOINED")
  * @ORM\DiscriminatorColumn(name="store_item_type", type="string")
  */
-abstract class AbstractStoreItem extends PaddedId {
+    abstract class AbstractStoreItem implements \JsonSerializable {
     /**
      * @var int
      * @ORM\Column(type="integer", length=11)
@@ -244,5 +242,24 @@ abstract class AbstractStoreItem extends PaddedId {
         $class = get_class($this);
         preg_match('/(\w+)$/', $class, $match);
         return $match[1];
+    }
+
+    public function jsonSerialize() {
+        $rtn = [
+            "id" => $this->getId(),
+            "type" => $this->getType(),
+            "location" => $this->getStoreFront()->getModule()->getLocation()->getName(),
+            "name" => $this->getName(),
+            "openId" => $this->getStoreFront()->getOwner()->getWeChatOpenId(),
+            "description" => $this->getDescription(),
+            "price" => $this->getPrice(),
+            "visitorCount" => $this->getVisitorCount() + $this->getVisitorCountModification(),
+            "createDate" => $this->getCreateTimestamp()->format("Y-m-d H:i:s"),
+            "isTraded" => $this->isTraded(),
+            "assets" => $this->getAssets()->map(function(Asset $asset){
+                return $asset->getId();
+            })->toArray()
+        ];
+        return $rtn;
     }
 }

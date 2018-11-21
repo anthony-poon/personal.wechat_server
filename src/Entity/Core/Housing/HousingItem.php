@@ -84,7 +84,12 @@ class HousingItem extends AbstractStoreItem {
         $this->duration = $duration;
         return $this;
     }
-    function getPrefix(): string {
-        return $this->getStoreFront()->getModule()->getPrefix();
+
+    public function jsonSerialize() {
+        $rtn = parent::jsonSerialize();
+        $rtn["location"] = $this->getLocation();
+        $rtn["propertyType"] = $this->getPropertyType();
+        $rtn["durationDay"] = $this->getDuration();
+        return $rtn;
     }
 }

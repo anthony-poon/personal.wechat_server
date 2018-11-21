@@ -10,10 +10,7 @@ namespace App\Controller\Core;
 
 use App\Entity\Base\Asset;
 use App\Entity\Core\AbstractStoreFront;
-use App\Entity\Core\Housing\HousingItem;
-use App\Entity\Core\SecondHand\SecondHandItem;
-use App\Entity\Core\Ticketing\TicketingItem;
-use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
+use App\Entity\Core\AbstractStoreItem;;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\Routing\Annotation\Route;
@@ -27,15 +24,12 @@ class StoreFrontAPIController extends Controller {
     public function getStoreFronts() {
         $repo = $this->getDoctrine()->getRepository(AbstractStoreFront::class);
         $storeFronts = $repo->findAll();
+        /* @var AbstractStoreFront $storeFront */
         $rtn = [];
         foreach ($storeFronts as $storeFront) {
-            /* @var \App\Entity\Core\AbstractStoreFront $storeFront */
-            $rtn[] = [
-                "id" => $storeFront->getId(),
-                "name" => $storeFront->getName(),
-                "type" => $storeFront->getType(),
-                "owner" => $storeFront->getOwner()->getFullName()
-            ];
+            $arr = $storeFront->jsonSerialize();
+            $arr["asset"] = $this->generateUrl("api_asset_get_item", ["id" => $arr["asset"]],UrlGeneratorInterface::ABSOLUTE_URL);
+            $rtn[] = $arr;
         }
         return new JsonResponse($rtn);
     }
@@ -43,55 +37,23 @@ class StoreFrontAPIController extends Controller {
     /**
      * @Route("/api/store-fronts/{id}", methods={"GET"}, requirements={"id"="[\w_]+"})
      */
-    public function getStoreFront(string $id, ParameterBagInterface $bag) {
+    public function getStoreFront(int $id) {
         $repo = $this->getDoctrine()->getRepository(AbstractStoreFront::class);
-        preg_match("/^\D*0*(\d+)$$/", $id, $match);
-        $id = $match[1];
         $storeFront = $repo->find($id);
         if (!$storeFront) {
             throw new NotFoundHttpException("Entity not found.");
         }
         /* @var \App\Entity\Core\AbstractStoreFront $storeFront */
-        $rtn = [];
-        foreach ($storeFront->getStoreItems() as $storeItem) {
-            /* @var \App\Entity\Core\AbstractStoreItem $storeItem */
-            $arr = [
-                "id" => $storeItem->getId(),
-                "type" => $storeItem->getType(),
-                "location" => $storeItem->getStoreFront()->getModule()->getLocation()->getName(),
-                "name" => $storeItem->getName(),
-                "openId" => $storeItem->getStoreFront()->getOwner()->getWeChatOpenId(),
-                "description" => $storeItem->getDescription(),
-                "price" => $storeItem->getPrice(),
-                "visitorCount" => $storeItem->getVisitorCount() + $storeItem->getVisitorCountModification(),
-                "createDate" => $storeItem->getCreateTimestamp()->format("Y-m-d H:i:s"),
-                "isTraded" => $storeItem->isTraded(),
-                "assets" => $storeItem->getAssets()->map(function(Asset $asset){
-                    return $this->generateUrl("api_asset_get_item", [
-                        "id" => $asset->getId()
-                    ], UrlGeneratorInterface::ABSOLUTE_URL);
-                })->toArray()
-            ];
-            switch (get_class($storeItem)) {
-                case SecondHandItem::class:
-                    /* @var SecondHandItem $storeItem */
-                    break;
-                case HousingItem::class:
-                    /* @var HousingItem $storeItem */
-                    $arr["location"] = $storeItem->getLocation();
-                    $arr["propertyType"] = $storeItem->getPropertyType();
-                    $arr["durationDay"] = $storeItem->getDuration();
-                    break;
-                case TicketingItem::class:
-                    /* @var TicketingItem $storeItem */
-                    $arr["validTill"] = $storeItem->getValidTill()->format("Y-m-d");
-                    break;
+        $storeItems = $storeFront->getStoreItems()->map(function(AbstractStoreItem $item) {
+            $arr = $item->jsonSerialize();
+            foreach (array_keys($arr["assets"]) as $key) {
+                $arr["assets"][$key] = $this->generateUrl("api_asset_get_item", ["id" => $arr["assets"][$key]],UrlGeneratorInterface::ABSOLUTE_URL);
             }
-            $rtn[] = $arr;
-        }
-        usort($rtn, function($arr1, $arr2) {
+            return $arr;
+        })->toArray();
+        usort($storeItems, function($arr1, $arr2) {
             return ($arr1["createDate"] > $arr2["createDate"]) ? -1 : 1;
         });
-        return new JsonResponse($rtn);
+        return new JsonResponse($storeItems);
     }
 }
