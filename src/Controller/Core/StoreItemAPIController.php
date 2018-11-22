@@ -69,7 +69,7 @@ class StoreItemAPIController extends Controller{
         $this->denyAccessUnlessGranted(StoreItemVoter::UPDATE, $storeItem);
         /* @var \Symfony\Component\HttpFoundation\File\UploadedFile $file */
         $file = array_values($request->files->all())[0];
-        $base64 = base64_encode(file_get_contents($file->getPath()));
+        $base64 = base64_encode(file_get_contents($file->getRealPath()));
         $asset = new Asset();
         $asset->setNamespace(get_class($storeItem));
         $asset->setMimeType($file->getMimeType());
