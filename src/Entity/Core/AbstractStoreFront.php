@@ -144,12 +144,17 @@ abstract class AbstractStoreFront implements \JsonSerializable {
                 $assets[] = $asset->getId();
             }
         }
+        if ($assets) {
+            $asset = max($assets);
+        } else {
+            $asset = null;
+        }
         $rtn = [
             "id" => $this->getId(),
             "type" => $this->getType(),
             "name" => $this->getName(),
             "location" => $this->getModule()->getLocation()->getName(),
-            "asset" => max($assets)
+            "asset" => $asset
         ];
         return $rtn;
     }

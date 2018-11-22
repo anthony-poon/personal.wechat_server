@@ -12,10 +12,7 @@ use App\Entity\Base\Asset;
 use App\Entity\Core\AbstractModule;
 use App\Entity\Core\AbstractStoreFront;
 use App\Entity\Core\AbstractStoreItem;
-use App\Entity\Core\Housing\HousingItem;
-use App\Entity\Core\PaddedId;
-use App\Entity\Core\SecondHand\SecondHandItem;
-use App\Entity\Core\Ticketing\TicketingItem;
+use App\Voter\StoreItemVoter;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
@@ -42,10 +39,11 @@ class StoreItemAPIController extends Controller{
                 /* @var AbstractStoreFront $storeFront */
                 foreach ($storeFront->getStoreItems() as $storeItem) {
                     /* @var AbstractStoreItem $storeItem */
-
                     $arr = $storeItem->jsonSerialize();
-                    foreach (array_keys($arr["assets"]) as $key) {
-                        $arr["assets"][$key] = $this->generateUrl("api_asset_get_item", ["id" => $arr["assets"][$key]],UrlGeneratorInterface::ABSOLUTE_URL);
+                    if ($arr["assets"]) {
+                        foreach (array_keys($arr["assets"]) as $key) {
+                            $arr["assets"][$key] = $this->generateUrl("api_asset_get_item", ["id" => $arr["assets"][$key]],UrlGeneratorInterface::ABSOLUTE_URL);
+                        }
                     }
                     $rtn[] = $arr;
                 }
@@ -56,5 +54,31 @@ class StoreItemAPIController extends Controller{
             return new JsonResponse($rtn);
         }
         throw new \Exception("Unsupported Methods");
+    }
+
+    /**
+     * @Route("/api/store-items/{id}/assets", methods={"POST"})
+     */
+    public function createAssets(int $id, Request $request) {
+        $repo = $this->getDoctrine()->getRepository(AbstractStoreItem::class);
+        /* @var \App\Entity\Core\AbstractStoreItem $storeItem */
+        $storeItem = $repo->find($id);
+        if (empty($storeItem)) {
+            throw new NotFoundHttpException("Cannot locate entity");
+        }
+        $this->denyAccessUnlessGranted(StoreItemVoter::UPDATE, $storeItem);
+        /* @var \Symfony\Component\HttpFoundation\File\UploadedFile $file */
+        $file = array_values($request->files->all())[0];
+        $base64 = base64_encode(file_get_contents($file->getPath()));
+        $asset = new Asset();
+        $asset->setNamespace(get_class($storeItem));
+        $asset->setMimeType($file->getMimeType());
+        $asset->setBase64($base64);
+        $storeItem->getAssets()->add($asset);
+        $em = $this->getDoctrine()->getManager();
+        $em->persist($storeItem);
+        $em->persist($asset);
+        $em->flush();
+        return new JsonResponse($storeItem);
     }
 }
