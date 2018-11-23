@@ -12,6 +12,7 @@ export default class EntityTable {
         this.addPath = $(this.el).data("add-path");
         this.editPath = $(this.el).data("edit-path");
         this.delPath = $(this.el).data("del-path");
+        this.column = $(this.el).data("column");
     }
 
     init() {
@@ -19,6 +20,7 @@ export default class EntityTable {
             "select": {
                 "style": "single"
             },
+            "column": this.column,
             "responsive": true,
             "dom":  "<'row table_btn_grp'<'col d-flex align-items-center'B><'col-auto'f>>" +
             "<'row'<'col-sm-12'tr>>" +

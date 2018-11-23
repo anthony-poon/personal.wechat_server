@@ -8,8 +8,8 @@
 
 namespace App\Voter;
 
-use App\Entity\Base\User;
 use App\Entity\Core\AbstractStoreFront;
+use App\Entity\Core\WeChatUser;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
 use Symfony\Component\Security\Core\Authorization\Voter\Voter;
 
@@ -20,7 +20,7 @@ class StoreFrontVoter extends Voter {
     const DELETE = "delete";
 
     protected function supports($attribute, $subject) {
-        if ($subject instanceof  AbstractStoreFront) {
+        if ($subject instanceof AbstractStoreFront) {
             return true;
         }
         return false;
@@ -29,7 +29,7 @@ class StoreFrontVoter extends Voter {
     protected function voteOnAttribute($attribute, $subject, TokenInterface $token) {
         /* @var \App\Entity\Core\AbstractStoreFront $subject */
         $user = $token->getUser();
-        if (!$user instanceof User) {
+        if (!$user instanceof WeChatUser) {
             return false;
         }
         $isAdmin = in_array("ROLE_ADMIN", $user->getRoles());

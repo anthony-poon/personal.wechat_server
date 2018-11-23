@@ -12,6 +12,9 @@ use App\Entity\Base\Asset;
 use App\Entity\Core\AbstractModule;
 use App\Entity\Core\AbstractStoreFront;
 use App\Entity\Core\AbstractStoreItem;
+use App\Entity\Core\Housing\HousingItem;
+use App\Entity\Core\SecondHand\SecondHandItem;
+use App\Entity\Core\Ticketing\TicketingItem;
 use App\Voter\StoreItemVoter;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -49,7 +52,10 @@ class StoreItemAPIController extends Controller{
                 }
             }
             usort($rtn, function($arr1, $arr2) {
-                return ($arr1["createDate"] > $arr2["createDate"]) ? -1 : 1;
+                if ($arr1["isPremium"] xor $arr2["isPremium"]) {
+                    return -($arr1["isPremium"] <=> $arr2["isPremium"]);
+                }
+                return -($arr1["createDate"] <=> $arr2["createDate"]);
             });
             return new JsonResponse($rtn);
         }
@@ -79,6 +85,54 @@ class StoreItemAPIController extends Controller{
         $em->persist($storeItem);
         $em->persist($asset);
         $em->flush();
+        return new JsonResponse($storeItem);
+    }
+
+    /**
+     * @Route("/api/store-items/{id}", methods={"PUT"})
+     */
+    public function updateItem(int $id, Request $request) {
+        $repo = $this->getDoctrine()->getRepository(AbstractStoreItem::class);
+        $storeItem = $repo->find($id);
+        $json = json_decode($request->getContent(), true);
+        switch (get_class($storeItem)) {
+            case SecondHandItem::class:
+                break;
+            case HousingItem::class:
+                $storeItem->setDuration($json["duration"]);
+                $storeItem->setPropertyType($json["propertyType"]);
+                $storeItem->setLocation($json["location"]);
+                break;
+            case TicketingItem::class:
+                $storeItem->setValidTill(\DateTimeImmutable::createFromFormat("Y-m-d", $json["validTill"]));
+                break;
+            default:
+                throw new \Exception("Unsupported Module");
+                break;
+        }
+        /* @var $item \App\Entity\Core\AbstractStoreItem */
+        $storeItem->setPrice((float) $json["price"]);
+        $storeItem->setName($json["name"]);
+        $storeItem->setDescription($json["description"]);
+        $em = $this->getDoctrine()->getManager();
+        $em->persist($storeItem);
+        $em->flush();
+        return new JsonResponse($storeItem);
+    }
+
+    /**
+     * @Route("/api/store-items/{id}", methods={"DELETE"})
+     */
+    public function deleteItem(int $id) {
+        $repo = $this->getDoctrine()->getRepository(AbstractStoreItem::class);
+        /* @var \App\Entity\Core\AbstractStoreItem $storeItem */
+        $storeItem = $repo->find($id);
+        if (empty($storeItem)) {
+            throw new NotFoundHttpException("Cannot locate entity");
+        }
+        $this->denyAccessUnlessGranted(StoreItemVoter::DELETE, $storeItem);
+        $storeItem->setIsActive(false);
+        $this->getDoctrine()->getManager()->persist($storeItem);
         return new JsonResponse($storeItem);
     }
 }

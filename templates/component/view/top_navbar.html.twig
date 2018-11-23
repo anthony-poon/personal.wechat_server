@@ -24,9 +24,9 @@
                     <span class="d-md-inline d-none">Welcome, Guest!</span>
                 </a>
             {% endif %}
-            {% if template_helper.getNavMenu %}
-                <div class="col-xs-12 col-md order-md-1">
-                    <div class="h-100 row align-items-center navbar-scroll">
+            <div class="col-xs-12 col-md order-md-1">
+                <div class="h-100 row align-items-center navbar-scroll">
+                    {% if template_helper.getNavMenu %}
                         {% for index, item in template_helper.getNavMenu %}
                             {% if item.isVisible is not defined or item.isVisible %}
                                 <div class="col-auto py-2 font-weight-light">
@@ -40,9 +40,9 @@
                                 </div>
                             {% endif %}
                         {% endfor %}
-                    </div>
+                    {% endif %}
                 </div>
-            {% endif %}
+            </div>
         </div>
         <div class="row">
             {% for index, item in template_helper.getNavMenu %}

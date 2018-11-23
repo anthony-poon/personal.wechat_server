@@ -8,7 +8,6 @@
 
 namespace App\Controller\Core;
 
-use App\Entity\Base\User;
 use App\Entity\Core\AbstractModule;
 use App\Entity\Core\AbstractStoreFront;
 use App\Entity\Core\Housing\HousingItem;
@@ -20,6 +19,7 @@ use App\Entity\Core\SecondHand\SecondHandStoreFront;
 use App\Entity\Core\Ticketing\TicketingItem;
 use App\Entity\Core\Ticketing\TicketingModule;
 use App\Entity\Core\Ticketing\TicketingStoreFront;
+use App\Entity\Core\WeChatUser;
 use App\Voter\StoreFrontVoter;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -54,6 +54,12 @@ class ModuleAPIController extends Controller {
                 $rtn[$key]["asset"] = $this->generateUrl("api_asset_get_item", ["id" => $rtn[$key]["asset"]],UrlGeneratorInterface::ABSOLUTE_URL);
             }
         }
+        usort($rtn, function($arr1, $arr2) {
+            if ($arr1["isPremium"] xor $arr2["isPremium"]) {
+                return -($arr1["isPremium"] <=> $arr2["isPremium"]);
+            }
+            return -($arr1["createDate"] <=> $arr2["createDate"]);
+        });
         return new JsonResponse($rtn);
     }
 
@@ -69,7 +75,7 @@ class ModuleAPIController extends Controller {
             throw new NotFoundHttpException("Entity not found.");
         }
         // Get storeFront by user, default current logged in user
-        /* @var User $user */
+        /* @var WeChatUser $user */
         $user = $this->getUser();
         $storeFront = $module->getStoreFronts()->filter(function(AbstractStoreFront $storeFront) use ($user) {
             return $storeFront->getOwner() === $user;

@@ -17,11 +17,12 @@ use Doctrine\ORM\Mapping as ORM;
  * Class AbstractStoreItem
  * @package App\Entity\Core
  * @ORM\Table(name="abstract_store_item")
+ * @ORM\HasLifecycleCallbacks()
  * @ORM\Entity()
  * @ORM\InheritanceType("JOINED")
  * @ORM\DiscriminatorColumn(name="store_item_type", type="string")
  */
-    abstract class AbstractStoreItem implements \JsonSerializable {
+abstract class AbstractStoreItem implements \JsonSerializable {
     /**
      * @var int
      * @ORM\Column(type="integer", length=11)
@@ -89,11 +90,10 @@ use Doctrine\ORM\Mapping as ORM;
     private $isActive = 1;
 
     /**
-     * @ORM\Column(type="datetime")
-     * @ORM\Version
+     * @ORM\Column(type="datetime_immutable")
      * @var \DateTimeInterface
      */
-    private $createTimestamp;
+    private $createTime;
 
     public function __construct() {
         $this->assets = new ArrayCollection();
@@ -234,8 +234,24 @@ use Doctrine\ORM\Mapping as ORM;
     /**
      * @return \DateTimeInterface
      */
-    public function getCreateTimestamp(): \DateTimeInterface {
-        return $this->createTimestamp;
+    public function getCreateTime(): \DateTimeInterface {
+        return $this->createTime;
+    }
+
+    /**
+     * @param \DateTimeInterface $createTime
+     * @return AbstractStoreItem
+     */
+    public function setCreateTime(\DateTimeInterface $createTime): AbstractStoreItem {
+        $this->createTime = $createTime;
+        return $this;
+    }
+
+    /**
+     * @ORM\PrePersist
+     */
+    public function onPrePersist() {
+        $this->createTime = new \DateTimeImmutable();
     }
 
     public function getType() {
@@ -248,13 +264,14 @@ use Doctrine\ORM\Mapping as ORM;
         $rtn = [
             "id" => $this->getId(),
             "type" => $this->getType(),
+            "isPremium" => $this->getStoreFront()->getOwner()->isPremium(),
             "location" => $this->getStoreFront()->getModule()->getLocation()->getName(),
             "name" => $this->getName(),
             "openId" => $this->getStoreFront()->getOwner()->getWeChatOpenId(),
             "description" => $this->getDescription(),
             "price" => $this->getPrice(),
             "visitorCount" => $this->getVisitorCount() + $this->getVisitorCountModification(),
-            "createDate" => $this->getCreateTimestamp()->format("Y-m-d H:i:s"),
+            "createDate" => $this->getCreateTime()->format("Y-m-d H:i:s"),
             "isTraded" => $this->isTraded(),
             "assets" => $this->getAssets()->map(function(Asset $asset){
                 return $asset->getId();

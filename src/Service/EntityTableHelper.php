@@ -3,13 +3,20 @@
 namespace App\Service;
 
 class EntityTableHelper {
+    public const COL_DATE = "date";
+    public const COL_NUM = "num";
+    public const COL_NUM_FMT = "num_fmt";
+    public const COL_HTML_NUM = "html_num";
+    public const COL_HTML_NUM_FMT = "html_num_fmt";
+    public const COL_HTML = "html";
+    public const COL_STRING = "string";
 	private $header = [];
 	private $table = [];
 	private $addPath = "";
 	private $editPath = "";
 	private $delPath = "";
 	private $router;
-	private $renderer;
+	private $columnType = [];
 	private $title;
 
 	public function __construct(\Symfony\Component\Routing\RouterInterface $router) {
@@ -65,9 +72,26 @@ class EntityTableHelper {
 		return $this;
 	}
 
+	public function setColumnType(int $index, $type) {
+        $this->columnType[$index] = $type;
+    }
+
 	public function compile(): array {
+	    $column = [];
+	    for ($i = 0; $i < count($this->header); $i++) {
+	        $attr = [];
+	        if (!empty($this->columnType[$i])) {
+	            $attr["type"] = $this->columnType[$i];
+            }
+            if ($attr) {
+                $column[] = $attr;
+            } else {
+                $column[] = null;
+            }
+        }
 		return [
 			"title" => $this->title,
+            "column" => json_encode($column),
 			"table" => $this->table,
 			"header" => $this->header,
 			"addPath" => $this->addPath,

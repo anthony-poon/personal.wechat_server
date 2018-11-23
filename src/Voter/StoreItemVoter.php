@@ -8,8 +8,8 @@
 
 namespace App\Voter;
 
-use App\Entity\Base\User;
 use App\Entity\Core\AbstractStoreItem;
+use App\Entity\Core\WeChatUser;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
 use Symfony\Component\Security\Core\Authorization\Voter\Voter;
 
@@ -29,7 +29,7 @@ class StoreItemVoter extends Voter {
     protected function voteOnAttribute($attribute, $subject, TokenInterface $token) {
         /* @var \App\Entity\Core\AbstractStoreItem $subject */
         $user = $token->getUser();
-        if (!$user instanceof User) {
+        if (!$user instanceof WeChatUser) {
             return false;
         }
         $isAdmin = in_array("ROLE_ADMIN", $user->getRoles());

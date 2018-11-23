@@ -3,6 +3,8 @@
 namespace App\Controller\Base;
 
 use App\Entity\Base\User;
+use App\Entity\Core\WeChatUser;
+use App\FormType\Form\Core\WeChatUserForm;
 use App\FormType\Form\Users\CreateUsersForm;
 use App\FormType\Form\Users\EditUsersForm;
 use App\Service\BaseTemplateHelper;
@@ -87,7 +89,17 @@ class UserController extends Controller {
         if (!$user) {
             throw new NotFoundHttpException("Unable to locate entity.");
         }
-        $form = $this->createForm(EditUsersForm::class, $user);
+        switch (get_class($user)) {
+            case WeChatUser::class:
+                $form = $this->createForm(WeChatUserForm::class, $user);
+                break;
+            case User::class:
+                $form = $this->createForm(EditUsersForm::class, $user);
+                break;
+            default:
+                throw new \Exception("Unsupported Method");
+                break;
+        }
         $form->handleRequest($request);
         if ($form->isSubmitted() && $form->isValid()) {
             /* @var \App\Entity\Base\User $user */

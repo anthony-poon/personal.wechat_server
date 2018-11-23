@@ -9,8 +9,8 @@
 namespace App\Authenticator;
 
 use App\Entity\Base\SecurityGroup;
-use App\Entity\Base\User;
 use App\Entity\Core\GlobalValue;
+use App\Entity\Core\WeChatUser;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -43,11 +43,11 @@ class ApiAuthenticator extends AbstractGuardAuthenticator {
 
     public function getUser($credentials, UserProviderInterface $userProvider) {
         if ($credentials["openId"]) {
-            $user = $this->em->getRepository(User::class)->findOneBy([
+            $user = $this->em->getRepository(WeChatUser::class)->findOneBy([
                 "weChatOpenId" => $credentials["openId"]
             ]);
             if (!$user) {
-                $user = new User();
+                $user = new WeChatUser();
                 $user->setWeChatOpenId($credentials["openId"]);
                 /* @var \App\Entity\Base\SecurityGroup $userGroup */
                 $userGroup = $this->em->getRepository(SecurityGroup::class)->findOneBy([

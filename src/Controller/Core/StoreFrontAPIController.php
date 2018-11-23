@@ -65,7 +65,10 @@ class StoreFrontAPIController extends Controller {
             return $arr;
         })->toArray();
         usort($storeItems, function($arr1, $arr2) {
-            return ($arr1["createDate"] > $arr2["createDate"]) ? -1 : 1;
+            if ($arr1["isPremium"] xor $arr2["isPremium"]) {
+                return -($arr1["isPremium"] <=> $arr2["isPremium"]);
+            }
+            return -($arr1["createDate"] <=> $arr2["createDate"]);
         });
         return new JsonResponse($storeItems);
     }
@@ -88,7 +91,6 @@ class StoreFrontAPIController extends Controller {
                 break;
             case HousingStoreFront::class:
                 $storeItem = new HousingItem();
-                $storeItem->setDuration($json["duration"]);
                 $storeItem->setDuration($json["duration"]);
                 $storeItem->setPropertyType($json["propertyType"]);
                 $storeItem->setLocation($json["location"]);

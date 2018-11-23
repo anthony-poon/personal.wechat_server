@@ -18,13 +18,10 @@ use Doctrine\Common\Collections\Collection;
 
 /**
  * Class User
- * @ORM\Table(name="app_user", uniqueConstraints={
- *     @ORM\UniqueConstraint(name="UNIQUE_OPEN_ID", columns={"we_chat_open_id"})
- * })
+ * @ORM\Table(name="app_user")
  * @ORM\Entity(repositoryClass="App\Repository\UserRepository")
  * @UniqueEntity("username", message="Username is taken already")
  * @UniqueEntity("email", message="Email is registered already")
- * @UniqueEntity("we_chat_open_id")
  */
 class User extends DirectoryObject implements UserInterface, \Serializable {
     /**
@@ -78,21 +75,8 @@ class User extends DirectoryObject implements UserInterface, \Serializable {
 	 */
 	private $securityGroups;
 
-    /**
-     * @var Collection
-     * @ORM\OneToMany(targetEntity="\App\Entity\Core\AbstractStoreFront", mappedBy="owner");
-     */
-	private $stores;
-
-    /**
-     * @var ?string
-     * @ORM\Column(type="string", length=512, nullable=true, unique=true)
-     */
-	private $weChatOpenId;
-
 	public function __construct() {
 	    parent::__construct();
-	    $this->stores = new ArrayCollection();
 	    $this->securityGroups = new ArrayCollection();
     }
 
@@ -241,7 +225,7 @@ class User extends DirectoryObject implements UserInterface, \Serializable {
     	if ($groups instanceof Collection) {
 			$this->securityGroups = $groups;
 		} else {
-    		$groups = new ArrayCollection($groups);
+            $this->securityGroups = new ArrayCollection($groups);
 		}
     	return $this;
 	}
@@ -253,27 +237,4 @@ class User extends DirectoryObject implements UserInterface, \Serializable {
 	public function getFriendlyClassName(): string {
 		return "User";
 	}
-
-    /**
-     * @return Collection
-     */
-    public function getStores(): ?Collection {
-        return $this->stores;
-    }
-
-    /**
-     * @return mixed
-     */
-    public function getWeChatOpenId() {
-        return $this->weChatOpenId;
-    }
-
-    /**
-     * @param mixed $weChatOpenId
-     * @return User
-     */
-    public function setWeChatOpenId($weChatOpenId) {
-        $this->weChatOpenId = $weChatOpenId;
-        return $this;
-    }
 }

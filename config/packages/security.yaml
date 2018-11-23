@@ -36,7 +36,7 @@ security:
                 property: username
         wechat_provider:
             entity:
-                class: App\Entity\Base\User
+                class: App\Entity\Core\WeChatUser
                 property: we_chat_open_id
             # activate different ways to authenticate
 

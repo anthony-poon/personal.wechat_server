@@ -8,8 +8,6 @@
 
 namespace App\Entity\Core;
 
-use App\Entity\Base\Asset;
-use App\Entity\Base\User;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
@@ -21,6 +19,7 @@ use Doctrine\ORM\Mapping as ORM;
  *     @ORM\UniqueConstraint(name="UNIQUE_OWNER_MODULE", columns={"owner_id", "module_id"})
  * })
  * @ORM\Entity()
+ * @ORM\HasLifecycleCallbacks()
  * @ORM\InheritanceType("JOINED")
  * @ORM\DiscriminatorColumn(name="store_front_type", type="string")
  */
@@ -34,8 +33,8 @@ abstract class AbstractStoreFront implements \JsonSerializable {
     private $id;
 
     /**
-     * @var User
-     * @ORM\ManyToOne(targetEntity="\App\Entity\Base\User", inversedBy="store")
+     * @var WeChatUser
+     * @ORM\ManyToOne(targetEntity="WeChatUser", inversedBy="stores")
      */
     protected $owner;
 
@@ -57,11 +56,10 @@ abstract class AbstractStoreFront implements \JsonSerializable {
     private $storeItems;
 
     /**
-     * @ORM\Column(type="datetime")
-     * @ORM\Version
+     * @ORM\Column(type="datetime_immutable")
      * @var \DateTimeInterface
      */
-    private $createTimestamp;
+    private $createTime;
 
     public function __construct() {
         $this->storeItems = new ArrayCollection();
@@ -75,17 +73,17 @@ abstract class AbstractStoreFront implements \JsonSerializable {
     }
 
     /**
-     * @return User
+     * @return WeChatUser
      */
-    public function getOwner(): User {
+    public function getOwner(): WeChatUser {
         return $this->owner;
     }
 
     /**
-     * @param User $owner
+     * @param WeChatUser $owner
      * @return AbstractStoreFront
      */
-    public function setOwner(User $owner): AbstractStoreFront {
+    public function setOwner(WeChatUser $owner): AbstractStoreFront {
         $this->owner = $owner;
         return $this;
     }
@@ -125,8 +123,22 @@ abstract class AbstractStoreFront implements \JsonSerializable {
     /**
      * @return \DateTimeInterface
      */
-    public function getCreateTimestamp(): \DateTimeInterface {
-        return $this->createTimestamp;
+    public function getCreateTime(): \DateTimeInterface {
+        return $this->createTime;
+    }
+
+    /**
+     * @param \DateTimeInterface $createTime
+     */
+    public function setCreateTime(\DateTimeInterface $createTime): void {
+        $this->createTime = $createTime;
+    }
+
+    /**
+     * @ORM\PrePersist
+     */
+    public function onPrePersist() {
+        $this->createTime = new \DateTimeImmutable();
     }
 
     public function getType() {
@@ -152,8 +164,10 @@ abstract class AbstractStoreFront implements \JsonSerializable {
         $rtn = [
             "id" => $this->getId(),
             "type" => $this->getType(),
+            "isPremium" => $this->getOwner()->isPremium(),
             "name" => $this->getName(),
             "location" => $this->getModule()->getLocation()->getName(),
+            "createDate" => $this->getCreateTime()->format("Y-m-d H:i:s"),
             "asset" => $asset
         ];
         return $rtn;

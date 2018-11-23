@@ -10,7 +10,6 @@ namespace App\Command;
 
 use App\Entity\Base\Asset;
 use App\Entity\Base\SecurityGroup;
-use App\Entity\Base\User;
 use App\Entity\Core\AbstractModule;
 use App\Entity\Core\AbstractStoreFront;
 use App\Entity\Core\Housing\HousingItem;
@@ -22,6 +21,7 @@ use App\Entity\Core\SecondHand\SecondHandStoreFront;
 use App\Entity\Core\Ticketing\TicketingItem;
 use App\Entity\Core\Ticketing\TicketingModule;
 use App\Entity\Core\Ticketing\TicketingStoreFront;
+use App\Entity\Core\WeChatUser;
 use DateTimeImmutable;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Console\Command\Command;
@@ -74,15 +74,15 @@ class DemoCommand extends Command {
         $this->em->flush();
     }
 
-    private function initUser(string $username, string $password = "password"): User {
-        $user = $this->em->getRepository(User::class)->findOneBy([
+    private function initUser(string $username, string $password = "password"): WeChatUser {
+        $user = $this->em->getRepository(WeChatUser::class)->findOneBy([
             "username" => $username
         ]);
         $userGroup = $this->em->getRepository(SecurityGroup::class)->findOneBy([
             "siteToken" => "ROLE_USER"
         ]);
         if (!$user) {
-            $user = new User();
+            $user = new WeChatUser();
             $user->setUsername($username);
             $user->setFullName($username);
             $user->setWeChatOpenId("_".$username);
@@ -96,7 +96,7 @@ class DemoCommand extends Command {
         return $user;
     }
 
-    private function initStoreFront(User $user) {
+    private function initStoreFront(WeChatUser $user) {
         $modules = $this->em->getRepository(AbstractModule::class)->findAll();
         $storeFronts = [];
         foreach ($modules as $module) {

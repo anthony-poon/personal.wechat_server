@@ -30,27 +30,21 @@ class BaseTemplateHelper {
 			}
 		}
 
-    	$this->navMenu = [
-        	[
-        		"text" => "Home",
-				"icon" => "home",
-				"url" => $router->generate("home"),
-			], [
-				"text" => "Administration",
-				"url" => "#",
-				"isVisible" => in_array("ROLE_ADMIN", $this->role),
-                "dropdown" => [
-                    [
-                        "text" => "User Management",
-                        "url" => $router->generate("user_list"),
-                    ],[
-                        "text" => "Group Management",
-                        "url" => $router->generate("user_group_list"),
-                        "isVisible" => in_array("ROLE_ADMIN", $this->role) ,
-                    ]
-                ]
-			]
-		];
+//    	$this->navMenu = [
+//        	[
+//        		"text" => "Home",
+//				"icon" => "home",
+//				"url" => $router->generate("home"),
+//			], [
+//				"text" => "Users",
+//				"isVisible" => in_array("ROLE_ADMIN", $this->role),
+//                "url" => $router->generate("user_list"),
+//			], [
+//			    "text" => "Store Items",
+//                "isVisible" => in_array("ROLE_ADMIN", $this->role),
+//                "url" => $router->generate("store_item_list_store_items")
+//            ]
+//		];
 
         $this->sideMenu = [
             [
@@ -58,19 +52,13 @@ class BaseTemplateHelper {
                 "icon" => "home",
                 "url" => $router->generate("home"),
             ], [
-                "text" => "Administration",
-                "url" => "#",
+                "text" => "Users",
                 "isVisible" => in_array("ROLE_ADMIN", $this->role),
-                "dropdown" => [
-                    [
-                        "text" => "User Management",
-                        "url" => $router->generate("user_list"),
-                    ],[
-                        "text" => "Group Management",
-                        "url" => $router->generate("user_group_list"),
-                        "isVisible" => in_array("ROLE_ADMIN", $this->role),
-                    ]
-                ]
+                "url" => $router->generate("user_list"),
+            ], [
+                "text" => "Store Items",
+                "isVisible" => in_array("ROLE_ADMIN", $this->role),
+                "url" => $router->generate("store_item_list_store_items")
             ]
         ];
     }

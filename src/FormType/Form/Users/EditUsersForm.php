@@ -31,7 +31,9 @@ class EditUsersForm extends AbstractType {
                     "label" => "Repeat Password"
                 ),
             ))
-            ->add('email', EmailType::class)
+            ->add('email', EmailType::class, [
+                "required" => false
+            ])
             ->add("submit", SubmitType::class);
     }
 
