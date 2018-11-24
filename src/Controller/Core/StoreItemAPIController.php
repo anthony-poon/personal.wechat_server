@@ -28,10 +28,10 @@ class StoreItemAPIController extends Controller{
      * @Route("/api/store-items", methods={"GET"})
      */
     public function getStoreItems(Request $request) {
-        $query = $request->query->all();
-        if (array_key_exists("module", $query) && $query["module"]) {
+        if ($request->query->get("module")) {
             $repo = $this->getDoctrine()->getRepository(AbstractModule::class);
-            $id = (int) $query["module"];
+            $id = (int) $request->query->get("module");
+            $userId = (int) $request->query->get("user");
             $module = $repo->find($id);
             if (!$module) {
                 throw new NotFoundHttpException("Cannot find module");
@@ -42,13 +42,15 @@ class StoreItemAPIController extends Controller{
                 /* @var AbstractStoreFront $storeFront */
                 foreach ($storeFront->getStoreItems() as $storeItem) {
                     /* @var AbstractStoreItem $storeItem */
-                    $arr = $storeItem->jsonSerialize();
-                    if ($arr["assets"]) {
-                        foreach (array_keys($arr["assets"]) as $key) {
-                            $arr["assets"][$key] = $this->generateUrl("api_asset_get_item", ["id" => $arr["assets"][$key]],UrlGeneratorInterface::ABSOLUTE_URL);
+                    if (empty($userId) || ($userId && $userId == $storeItem->getStoreFront()->getOwner()->getId())) {
+                        $arr = $storeItem->jsonSerialize();
+                        if ($arr["assets"]) {
+                            foreach (array_keys($arr["assets"]) as $key) {
+                                $arr["assets"][$key] = $this->generateUrl("api_asset_get_item", ["id" => $arr["assets"][$key]],UrlGeneratorInterface::ABSOLUTE_URL);
+                            }
                         }
+                        $rtn[] = $arr;
                     }
-                    $rtn[] = $arr;
                 }
             }
             usort($rtn, function($arr1, $arr2) {
@@ -60,6 +62,18 @@ class StoreItemAPIController extends Controller{
             return new JsonResponse($rtn);
         }
         throw new \Exception("Unsupported Methods");
+    }
+
+    /**
+     * @Route("/api/store-items/{id}", methods={"GET"})
+     */
+    public function getStoreItem(int $id) {
+        $repo = $this->getDoctrine()->getRepository(AbstractStoreItem::class);
+        $storeItem = $repo->find($id);
+        if (empty($storeItem)) {
+            throw new NotFoundHttpException("Entity not found");
+        }
+        return new JsonResponse($storeItem);
     }
 
     /**
