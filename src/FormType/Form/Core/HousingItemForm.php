@@ -31,7 +31,7 @@ class HousingItemForm extends AbstractType{
                 "disabled" => true
             ])
             ->add("visitorCountModification", NumberType::class)
-            ->add("isActive", CheckboxType::class)
+            ->add("isDisabled", CheckboxType::class)
             ->add("isTraded", CheckboxType::class)
             ->add("createTime", DateTimeType::class, [
                 'widget' => 'single_text',

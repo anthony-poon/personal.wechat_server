@@ -131,7 +131,7 @@ class StoreItemAPIController extends Controller{
             throw new NotFoundHttpException("Cannot locate entity");
         }
         $this->denyAccessUnlessGranted(StoreItemVoter::DELETE, $storeItem);
-        $storeItem->setIsActive(false);
+        $storeItem->setIsDisabled(true);
         $this->getDoctrine()->getManager()->persist($storeItem);
         return new JsonResponse($storeItem);
     }

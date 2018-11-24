@@ -12,6 +12,9 @@
             {{ title }}
         </h5>
     </div>
+    {% if additional_template is defined %}
+        {% include additional_template.path %}
+    {% endif %}
     <div class="row">
         <div class="col-md-8">
             {{ form(form) }}

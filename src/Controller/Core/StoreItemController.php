@@ -47,7 +47,7 @@ class StoreItemController extends Controller {
                 $storeItem->getId(),
                 $storeItem->getName(),
                 $storeItem->getType(),
-                $storeItem->isActive() ? "True" : "False",
+                $storeItem->isDisabled() ? "True" : "False",
                 $storeItem->isTraded() ? "True" : "False",
                 $storeItem->getVisitorCount() + $storeItem->getVisitorCountModification(),
                 $storeItem->getCreateTime()->format("Y-m-d")
@@ -89,7 +89,10 @@ class StoreItemController extends Controller {
         }
         return $this->render("render/simple_form.html.twig", [
             "title" => "Edit Item",
-            "form" => $form->createView()
+            "form" => $form->createView(),
+            "additional_template" => [
+                "path" => "component/view/store_items/btn_bar.html.twig"
+            ]
         ]);
     }
 }

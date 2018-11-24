@@ -61,7 +61,11 @@ class DemoCommand extends Command {
         $users = [];
         for($i = 1; $i <= self::DEMO_USER_COUNT; $i ++) {
             $output->writeln("Creating Demo User user_$i");
-            $users[] = $this->initUser("user_$i");
+            $user = $this->initUser("user_$i");
+            if ($i = self::DEMO_USER_COUNT) {
+                $user->setIsPremium(true);
+            }
+            $users[] = $user;
         }
         $storeFronts = [];
         foreach ($users as $user) {
@@ -109,11 +113,9 @@ class DemoCommand extends Command {
                     if (!$storeFront) {
                         $storeFront = new SecondHandStoreFront();
                         $storeFront->setOwner($user);
-                        $storeFront->setName($user->getFullName()."'s Store");
+                        $storeFront->setName($user->getFullName());
                         $storeFront->setModule($module);
                     }
-                    $storeFronts[] = $storeFront;
-                    $this->em->persist($storeFront);
                     break;
                 case HousingModule::class:
                     /* @var HousingModule $module */
@@ -123,11 +125,9 @@ class DemoCommand extends Command {
                     if (!$storeFront) {
                         $storeFront = new HousingStoreFront();
                         $storeFront->setOwner($user);
-                        $storeFront->setName($user->getFullName()."'s Store");
+                        $storeFront->setName($user->getFullName());
                         $storeFront->setModule($module);
                     }
-                    $storeFronts[] = $storeFront;
-                    $this->em->persist($storeFront);
                     break;
                 case TicketingModule::class:
                     /* @var TicketingModule $module */
@@ -137,14 +137,18 @@ class DemoCommand extends Command {
                     if (!$storeFront) {
                         $storeFront = new TicketingStoreFront();
                         $storeFront->setOwner($user);
-                        $storeFront->setName($user->getFullName()."'s Store");
+                        $storeFront->setName($user->getFullName());
                         $storeFront->setModule($module);
                     }
-                    $storeFronts[] = $storeFront;
-                    $this->em->persist($storeFront);
                     break;
+                default:
+                    throw new \Exception("Unsupported Method");
             }
-
+            $date = new \DateTimeImmutable();
+            $offset = rand(1,5);
+            $storeFront->setCreateTime($date->modify("-$offset day"));
+            $storeFronts[] = $storeFront;
+            $this->em->persist($storeFront);
         }
         return $storeFronts;
     }
@@ -173,6 +177,9 @@ class DemoCommand extends Command {
                             $asset->setBase64($this->placeholderPic[$index]);
                             $item->getAssets()->add($asset);
                         }
+                        $date = new DateTimeImmutable();
+                        $offset = rand(1,5);
+                        $item->setCreateTime($date->modify("-$offset day"));
                         $this->em->persist($item);
                     }
                     $items[] = $item;
@@ -202,6 +209,9 @@ class DemoCommand extends Command {
                             $asset->setBase64($this->placeholderPic[$index]);
                             $item->getAssets()->add($asset);
                         }
+                        $date = new DateTimeImmutable();
+                        $offset = rand(1,5);
+                        $item->setCreateTime($date->modify("-$offset day"));
                         $this->em->persist($item);
                     }
                     $items[] = $item;
@@ -231,11 +241,15 @@ class DemoCommand extends Command {
                             $asset->setBase64($this->placeholderPic[$index]);
                             $item->getAssets()->add($asset);
                         }
+                        $offset = rand(1,5);
+                        $item->setCreateTime($date->modify("-$offset day"));
                         $this->em->persist($item);
                     }
                     $items[] = $item;
                 }
                 break;
+            default:
+                throw new \Exception("Unsupported Method");
         }
         return $items;
     }

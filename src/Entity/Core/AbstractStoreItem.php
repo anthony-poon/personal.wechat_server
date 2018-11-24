@@ -87,7 +87,7 @@ abstract class AbstractStoreItem implements \JsonSerializable {
      * @var boolean
      * @ORM\Column(type="boolean")
      */
-    private $isActive = 1;
+    private $isDisabled = false;
 
     /**
      * @ORM\Column(type="datetime_immutable")
@@ -220,15 +220,15 @@ abstract class AbstractStoreItem implements \JsonSerializable {
     /**
      * @return bool
      */
-    public function isActive(): bool {
-        return $this->isActive;
+    public function isDisabled(): bool {
+        return $this->isDisabled;
     }
 
     /**
-     * @param bool $isActive
+     * @param bool $isDisabled
      */
-    public function setIsActive(bool $isActive): void {
-        $this->isActive = $isActive;
+    public function setIsDisabled(bool $isDisabled): void {
+        $this->isDisabled = $isDisabled;
     }
 
     /**
@@ -260,6 +260,10 @@ abstract class AbstractStoreItem implements \JsonSerializable {
         return $match[1];
     }
 
+    public function isActive() {
+        return !$this->isDisabled() && !$this->isTraded() && $this->getStoreFront()->getOwner()->getIsActive();
+    }
+
     public function jsonSerialize() {
         $rtn = [
             "id" => $this->getId(),
@@ -272,6 +276,7 @@ abstract class AbstractStoreItem implements \JsonSerializable {
             "price" => $this->getPrice(),
             "visitorCount" => $this->getVisitorCount() + $this->getVisitorCountModification(),
             "createDate" => $this->getCreateTime()->format("Y-m-d H:i:s"),
+            "isActive" => $this->isActive(),
             "isTraded" => $this->isTraded(),
             "assets" => $this->getAssets()->map(function(Asset $asset){
                 return $asset->getId();

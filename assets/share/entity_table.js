@@ -16,6 +16,40 @@ export default class EntityTable {
     }
 
     init() {
+        let btn = [];
+        if (this.addPath) {
+            btn.push({
+                text: "Create",
+                className: "create-btn",
+                action: (e, dt, node, config) => {
+                    location.href = this.addPath
+                },
+            })
+        }
+        if (this.editPath) {
+            btn.push({
+                text: "Edit",
+                className: "update-btn",
+                action: (e, dt, node, config) => {
+                    let id = parseInt(dt.rows(".selected").ids().toArray()[0]);
+                    location.href = URI.expand(this.editPath, {
+                        id: id
+                    });
+                }
+            })
+        }
+        if (this.delPath) {
+            btn.push({
+                text: "Delete",
+                className: "delete-btn",
+                action: (e, dt, node, config) =>    {
+                    let id = parseInt(dt.rows(".selected").ids().toArray()[0]);
+                    location.href = URI.expand(this.delPath, {
+                        id: id
+                    });
+                }
+            })
+        }
         this.table = $(this.el).DataTable({
             "select": {
                 "style": "single"
@@ -25,34 +59,7 @@ export default class EntityTable {
             "dom":  "<'row table_btn_grp'<'col d-flex align-items-center'B><'col-auto'f>>" +
             "<'row'<'col-sm-12'tr>>" +
             "<'row'<'col'i><'col-auto'p>>",
-            "buttons": [
-                {
-                    text: "Create",
-                    className: "create-btn",
-                    action: (e, dt, node, config) => {
-                        location.href = this.addPath
-                    },
-
-                },{
-                    text: "Edit",
-                    className: "update-btn",
-                    action: (e, dt, node, config) => {
-                        let id = parseInt(dt.rows(".selected").ids().toArray()[0]);
-                        location.href = URI.expand(this.editPath, {
-                            id: id
-                        });
-                    }
-                }, {
-                    text: "Delete",
-                    className: "delete-btn",
-                    action: (e, dt, node, config) =>    {
-                        let id = parseInt(dt.rows(".selected").ids().toArray()[0]);
-                        location.href = URI.expand(this.delPath, {
-                            id: id
-                        });
-                    }
-                }
-            ],
+            "buttons": btn,
         });
         this.table.buttons(".delete-btn").disable();
         this.table.buttons(".update-btn").disable();

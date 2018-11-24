@@ -147,6 +147,10 @@ abstract class AbstractStoreFront implements \JsonSerializable {
         return $match[1];
     }
 
+    public function isActive() {
+        return $this->getOwner()->getIsActive();
+    }
+
     public function jsonSerialize() {
         $assets = [];
         foreach ($this->getStoreItems() as $storeItem) {
@@ -164,6 +168,7 @@ abstract class AbstractStoreFront implements \JsonSerializable {
         $rtn = [
             "id" => $this->getId(),
             "type" => $this->getType(),
+            "isActive" => $this->isActive(),
             "isPremium" => $this->getOwner()->isPremium(),
             "name" => $this->getName(),
             "location" => $this->getModule()->getLocation()->getName(),

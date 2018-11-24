@@ -119,7 +119,6 @@ class UserGroupController extends Controller {
                 $form->handleRequest($request);
                 if ($form->isSubmitted() && $form->isValid()) {
                     $group = $form->getData();
-                    var_dump($group->getChildren());
                     $em->persist($group);
                     $em->flush();
                     $this->redirectToRoute("user_group_list");
