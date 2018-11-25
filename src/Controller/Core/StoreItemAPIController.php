@@ -73,7 +73,11 @@ class StoreItemAPIController extends Controller{
         if (empty($storeItem)) {
             throw new NotFoundHttpException("Entity not found");
         }
-        return new JsonResponse($storeItem);
+        $rtn = $storeItem->jsonSerialize();
+        foreach (array_keys($rtn["assets"]) as $key) {
+            $rtn["assets"][$key] = $this->generateUrl("api_asset_get_item", ["id" => $rtn["assets"][$key]],UrlGeneratorInterface::ABSOLUTE_URL);
+        }
+        return new JsonResponse($rtn);
     }
 
     /**
