@@ -64,7 +64,7 @@ class StoreFrontAPIController extends Controller {
             return $arr;
         })->toArray();
         usort($storeItems, function($arr1, $arr2) {
-            if ($arr1["isSticky"] xor $arr2["isPremium"]) {
+            if ($arr1["isSticky"] xor $arr2["isSticky"]) {
                 return -($arr1["isSticky"] <=> $arr2["isSticky"]);
             }
             return -($arr1["createDate"] <=> $arr2["createDate"]);
