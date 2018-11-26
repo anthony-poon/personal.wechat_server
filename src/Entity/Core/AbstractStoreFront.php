@@ -214,6 +214,7 @@ abstract class AbstractStoreFront implements \JsonSerializable {
             "id" => $this->getId(),
             "type" => $this->getType(),
             "isActive" => $this->isActive(),
+            "isSticky" => $this->isSticky(),
             "isPremium" => $this->getOwner()->isPremium(),
             "name" => $this->getName(),
             "location" => $this->getModule()->getLocation()->getName(),
