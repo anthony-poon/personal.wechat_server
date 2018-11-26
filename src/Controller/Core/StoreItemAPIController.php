@@ -171,7 +171,11 @@ class StoreItemAPIController extends Controller{
         }
         $this->denyAccessUnlessGranted(StoreItemVoter::DELETE, $storeItem);
         $storeItem->setIsDisabled(true);
-        $this->getDoctrine()->getManager()->persist($storeItem);
-        return new JsonResponse($storeItem);
+        $em = $this->getDoctrine()->getManager();
+        $em->persist($storeItem);
+        $em->flush();
+        return new JsonResponse([
+            "status" => "success"
+        ]);
     }
 }
