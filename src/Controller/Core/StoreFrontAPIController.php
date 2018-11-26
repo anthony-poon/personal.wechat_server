@@ -108,7 +108,8 @@ class StoreFrontAPIController extends Controller {
         $storeItem->setIsTraded(false);
         $storeItem->setPrice((float) $json["price"]);
         $storeItem->setName($json["name"]);
-        $storeItem->setDescription($json["description"]);
+        $storeItem->setDescription($json["description"] ?? null);
+        $storeItem->setWeChatId($json["weChatId"] ?? null);
         $em = $this->getDoctrine()->getManager();
         $em->persist($storeItem);
         $em->flush();
