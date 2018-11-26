@@ -153,7 +153,6 @@ class StoreItemAPIController extends Controller{
         $storeItem->setName($json["name"]);
         $storeItem->setDescription($json["description"] ?? null);
         $storeItem->setWeChatId($json["weChatId"] ?? null);
-        $storeItem->setIsTraded($json["isTraded"] == true);
         $em = $this->getDoctrine()->getManager();
         $em->persist($storeItem);
         $em->flush();
