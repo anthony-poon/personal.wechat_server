@@ -8,12 +8,12 @@
 
 namespace App\Controller\Core;
 
-use App\Entity\Base\Asset;
 use App\Entity\Core\AbstractModule;
 use App\Entity\Core\AbstractStoreFront;
 use App\Entity\Core\AbstractStoreItem;
 use App\Entity\Core\Housing\HousingItem;
 use App\Entity\Core\SecondHand\SecondHandItem;
+use App\Entity\Core\StoreItemAsset;
 use App\Entity\Core\Ticketing\TicketingItem;
 use App\Voter\StoreItemVoter;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -54,8 +54,8 @@ class StoreItemAPIController extends Controller{
                 }
             }
             usort($rtn, function($arr1, $arr2) {
-                if ($arr1["isPremium"] xor $arr2["isPremium"]) {
-                    return -($arr1["isPremium"] <=> $arr2["isPremium"]);
+                if ($arr1["isSticky"] xor $arr2["isSticky"]) {
+                    return -($arr1["isSticky"] <=> $arr2["isSticky"]);
                 }
                 return -($arr1["createDate"] <=> $arr2["createDate"]);
             });
@@ -73,15 +73,18 @@ class StoreItemAPIController extends Controller{
         if (empty($storeItem)) {
             throw new NotFoundHttpException("Entity not found");
         }
+        $storeItem->setVisitorCount($storeItem->getVisitorCount() + 1);
         $rtn = $storeItem->jsonSerialize();
         foreach (array_keys($rtn["assets"]) as $key) {
             $rtn["assets"][$key] = $this->generateUrl("api_asset_get_item", ["id" => $rtn["assets"][$key]],UrlGeneratorInterface::ABSOLUTE_URL);
         }
+        $em = $this->getDoctrine()->getManager();
+        $em->persist($storeItem);
         return new JsonResponse($rtn);
     }
 
     /**
-     * @Route("/api/store-items/{id}/assets", methods={"POST"})
+     * @Route("/api/store-items/{id}/assets", methods={"POST"}, name="api_store_item_create_asset")
      */
     public function createAssets(int $id, Request $request) {
         $repo = $this->getDoctrine()->getRepository(AbstractStoreItem::class);
@@ -94,16 +97,33 @@ class StoreItemAPIController extends Controller{
         /* @var \Symfony\Component\HttpFoundation\File\UploadedFile $file */
         $file = array_values($request->files->all())[0];
         $base64 = base64_encode(file_get_contents($file->getRealPath()));
-        $asset = new Asset();
+        $asset = new StoreItemAsset();
         $asset->setNamespace(get_class($storeItem));
         $asset->setMimeType($file->getMimeType());
         $asset->setBase64($base64);
-        $storeItem->getAssets()->add($asset);
+        $asset->setStoreItem($storeItem);
         $em = $this->getDoctrine()->getManager();
         $em->persist($storeItem);
         $em->persist($asset);
         $em->flush();
         return new JsonResponse($storeItem);
+    }
+
+    /**
+     * @Route("/api/store-items/assets/{id}", methods={"DELETE"}, name="api_store_item_delete_asset")
+     */
+    public function deleteAsset(int $id) {
+        $repo = $this->getDoctrine()->getRepository(StoreItemAsset::class);
+        $asset = $repo->find($id);
+        if (empty($asset)) {
+            throw new NotFoundHttpException("Cannot locate Entity");
+        }
+        $em = $this->getDoctrine()->getManager();
+        $em->remove($asset);
+        $em->flush();
+        return new JsonResponse([
+            "status" => "success"
+        ]);
     }
 
     /**
@@ -131,7 +151,8 @@ class StoreItemAPIController extends Controller{
         /* @var $item \App\Entity\Core\AbstractStoreItem */
         $storeItem->setPrice((float) $json["price"]);
         $storeItem->setName($json["name"]);
-        $storeItem->setDescription($json["description"]);
+        $storeItem->setDescription($json["description"] ?? null);
+        $storeItem->setWeChatId($json["weChatId"] ?? null);
         $em = $this->getDoctrine()->getManager();
         $em->persist($storeItem);
         $em->flush();

@@ -34,9 +34,9 @@ class UserController extends Controller {
     public function list(EntityTableHelper $helper, RouterInterface $router) {
         $repo = $this->getDoctrine()->getRepository(User::class);
         $users = $repo->findAll();
-        $helper->setAddPath("user_create");
-        $helper->setDelPath("user_delete");
-        $helper->setEditPath("user_edit");
+        $helper->addButton("Create", "user_create");
+        $helper->addButton("Edit", "user_edit");
+        $helper->addButton("Delete", "user_delete");
         $helper->setHeader([
         	"#",
 			"Username",

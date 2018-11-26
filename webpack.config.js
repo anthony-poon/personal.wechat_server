@@ -11,6 +11,9 @@ Encore
         "./assets/base.scss",
         "./assets/share/form_helper.js"
     ])
+    .addEntry("store_item/assets", [
+        "./assets/store_item/assets.js"
+    ])
     .createSharedEntry('vendor', [
         'jquery',
         'bootstrap',

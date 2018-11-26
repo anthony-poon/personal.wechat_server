@@ -22,8 +22,13 @@ use Symfony\Component\OptionsResolver\OptionsResolver;
 class TicketingItemForm extends AbstractType{
     public function buildForm(FormBuilderInterface $builder, array $options) {
         $builder->add("name", TextType::class)
-            ->add("description", TextType::class)
+            ->add("description", TextType::class, [
+                "required" => false
+            ])
             ->add("price", NumberType::class)
+            ->add("weChatId", TextType::class, [
+                "required" => false
+            ])
             ->add("validTill", DateType::class, [
                 "widget" => 'single_text',
                 'input' => 'datetime_immutable'
@@ -34,7 +39,8 @@ class TicketingItemForm extends AbstractType{
             ->add("visitorCountModification", NumberType::class)
             ->add("isDisabled", CheckboxType::class)
             ->add("isTraded", CheckboxType::class)
-            ->add("createTime", DateTimeType::class, [
+            ->add("isSticky", CheckboxType::class)
+            ->add("createDate", DateTimeType::class, [
                 'widget' => 'single_text',
                 'input' => 'datetime_immutable'
             ])

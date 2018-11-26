@@ -43,9 +43,9 @@ class UserGroupController extends Controller {
                 $g->getChildren()->count()
             ]);
         }
-        $helper->setAddPath("user_group_create");
-        $helper->setEditPath("user_group_edit");
-        $helper->setDelPath("user_group_delete");
+        $helper->addButton("Create", "user_group_create");
+        $helper->addButton("Edit", "user_group_edit");
+        $helper->addButton("Delete", "user_group_delete");
         $helper->setTitle("User Groups");
         return $this->render("render/entity_table.html.twig", $helper->compile());
     }

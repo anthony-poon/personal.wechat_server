@@ -17,7 +17,7 @@ use Doctrine\ORM\Mapping as ORM;
  * @ORM\Table()
  * @ORM\Entity()
  */
-class WeChatUser extends User{
+class WeChatUser extends User implements \JsonSerializable {
 
     /**
      * @var bool
@@ -84,4 +84,15 @@ class WeChatUser extends User{
         $this->weChatOpenId = $weChatOpenId;
         return $this;
     }
+
+    public function jsonSerialize() {
+        return [
+            "id" => $this->getId(),
+            "fullName" => $this->getFullName(),
+            "openId" => $this->getWeChatOpenId(),
+            "isPremium" => $this->isPremium(),
+        ];
+    }
+
+
 }

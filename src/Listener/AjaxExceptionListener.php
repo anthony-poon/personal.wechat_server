@@ -6,7 +6,7 @@
  * Time: 4:18 PM
  */
 
-namespace App\Exception;
+namespace App\Listener;
 
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;

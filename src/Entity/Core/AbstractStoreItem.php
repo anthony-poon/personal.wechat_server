@@ -8,7 +8,6 @@
 
 namespace App\Entity\Core;
 
-use App\Entity\Base\Asset;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
@@ -45,11 +44,7 @@ abstract class AbstractStoreItem implements \JsonSerializable {
 
     /**
      * @var Collection
-     * @ORM\ManyToMany(targetEntity="\App\Entity\Base\Asset", cascade={"remove", "persist"})
-     * @ORM\JoinTable(name="store_item_asset_mapping",
-     *     joinColumns={@ORM\JoinColumn(name="store_item_id", referencedColumnName="id")},
-     *     inverseJoinColumns={@ORM\JoinColumn(name="asset_id", referencedColumnName="id", unique=true, onDelete="cascade")}
-     * )
+     * @ORM\OneToMany(targetEntity="StoreItemAsset", cascade={"remove"}, mappedBy="storeItem")
      */
     private $assets;
 
@@ -90,10 +85,22 @@ abstract class AbstractStoreItem implements \JsonSerializable {
     private $isDisabled = false;
 
     /**
-     * @ORM\Column(type="datetime_immutable")
-     * @var \DateTimeInterface
+     * @var boolean
+     * @ORM\Column(type="boolean")
      */
-    private $createTime;
+    private $isSticky = false;
+
+    /**
+     * @ORM\Column(type="datetime_immutable")
+     * @var \DateTimeImmutable
+     */
+    private $createDate;
+
+    /**
+     * @var string
+     * @ORM\Column(type="string", length=256, nullable=true)
+     */
+    private $weChatId;
 
     public function __construct() {
         $this->assets = new ArrayCollection();
@@ -232,18 +239,34 @@ abstract class AbstractStoreItem implements \JsonSerializable {
     }
 
     /**
-     * @return \DateTimeInterface
+     * @return \DateTimeImmutable
      */
-    public function getCreateTime(): \DateTimeInterface {
-        return $this->createTime;
+    public function getCreateDate(): \DateTimeImmutable {
+        return $this->createDate;
     }
 
     /**
-     * @param \DateTimeInterface $createTime
+     * @param \DateTimeImmutable $createDate
      * @return AbstractStoreItem
      */
-    public function setCreateTime(\DateTimeInterface $createTime): AbstractStoreItem {
-        $this->createTime = $createTime;
+    public function setCreateDate(\DateTimeImmutable $createDate): AbstractStoreItem {
+        $this->createDate = $createDate;
+        return $this;
+    }
+
+    /**
+     * @return string
+     */
+    public function getWeChatId(): ?string {
+        return $this->weChatId;
+    }
+
+    /**
+     * @param string $weChatId
+     * @return AbstractStoreItem
+     */
+    public function setWeChatId(string $weChatId = null): AbstractStoreItem {
+        $this->weChatId = $weChatId;
         return $this;
     }
 
@@ -251,7 +274,9 @@ abstract class AbstractStoreItem implements \JsonSerializable {
      * @ORM\PrePersist
      */
     public function onPrePersist() {
-        $this->createTime = new \DateTimeImmutable();
+        if (!$this->createDate) {
+            $this->createDate = new \DateTimeImmutable();
+        }
     }
 
     public function getType() {
@@ -264,21 +289,53 @@ abstract class AbstractStoreItem implements \JsonSerializable {
         return !$this->isDisabled() && !$this->isTraded() && $this->getStoreFront()->getOwner()->getIsActive();
     }
 
+    /**
+     * @return bool
+     */
+    public function isSticky(): bool {
+        return $this->isSticky;
+    }
+
+    /**
+     * @param bool $isSticky
+     * @return AbstractStoreItem
+     */
+    public function setIsSticky(bool $isSticky): AbstractStoreItem {
+        $this->isSticky = $isSticky;
+        return $this;
+    }
+
+    public function getExpireDate(): \DateTimeImmutable {
+        if ($this->getStoreFront()->getOwner()->isPremium()) {
+            return $this->getCreateDate()->modify("+14 day");
+        } else {
+            return $this->getCreateDate()->modify("+7 day");
+        }
+    }
+
+    public function isExpired(): bool {
+        $now = new \DateTimeImmutable();
+        return $now > $this->getExpireDate();
+    }
+
     public function jsonSerialize() {
         $rtn = [
             "id" => $this->getId(),
             "type" => $this->getType(),
-            "isPremium" => $this->getStoreFront()->getOwner()->isPremium(),
+            "isSticky" => $this->isSticky,
             "location" => $this->getStoreFront()->getModule()->getLocation()->getName(),
             "name" => $this->getName(),
             "openId" => $this->getStoreFront()->getOwner()->getWeChatOpenId(),
             "description" => $this->getDescription(),
             "price" => $this->getPrice(),
+            "weChatId" => $this->getWeChatId(),
             "visitorCount" => $this->getVisitorCount() + $this->getVisitorCountModification(),
-            "createDate" => $this->getCreateTime()->format("Y-m-d H:i:s"),
+            "createDate" => $this->getCreateDate()->format("Y-m-d H:i:s"),
+            "expireDate" => $this->getExpireDate(),
             "isActive" => $this->isActive(),
+            "isExpired" => $this->isExpired(),
             "isTraded" => $this->isTraded(),
-            "assets" => $this->getAssets()->map(function(Asset $asset){
+            "assets" => $this->getAssets()->map(function(StoreItemAsset $asset){
                 return $asset->getId();
             })->toArray()
         ];

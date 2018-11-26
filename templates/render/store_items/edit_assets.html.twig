@@ -1,0 +1,71 @@
+{% extends 'component/view/base.html.twig' %}
+
+{% block css %}
+{% endblock %}
+
+{% block javascripts %}
+    <script src="{{ asset('build/store_item/assets.js') }}"></script>
+{% endblock %}
+
+{% block body %}
+    <div class="row">
+        <h5 class="col title">
+            Manage Assets
+        </h5>
+    </div>
+    <div class="row">
+        {% for asset in assets %}
+            <!-- Assume 300px width per item-->
+            <div class="col-12 col-md-6 col-lg-4 col-xl-3">
+                <div class="card mb-3">
+                    <div class="card-img-top text-center">
+                        <img style="height: 250px" class="img-fluid p-3" src="{{ path("api_asset_get_item", {"id": asset.id}) }}"/>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <small class="col">Asset Id</small>
+                            <small class="col text-right">{{ asset.id }}</small>
+                        </div>
+                        <div class="row">
+                            <small class="col">Owner Id</small>
+                            <small class="col text-right">{{ asset.ownerId }}</small>
+                        </div>
+                        <div class="row">
+                            <small class="col">Owner</small>
+                            <small class="col text-right">{{ asset.owner }}</small>
+                        </div>
+                        <div class="row">
+                            <small class="col">Type</small>
+                            <small class="col text-right">{{ asset.type }}</small>
+                        </div>
+                        <div class="row">
+                            <small class="col">Create Date</small>
+                            <small class="col text-right">{{ asset.createDate }}</small>
+                        </div>
+                        <div class="row">
+                            <div class="col text-right mt-3">
+                                <button class="btn btn-sm btn-danger p-1 rounded-circle delete-btn" data-ajax-url="{{ path("api_store_item_delete_asset", {"id": asset.id}) }}" data-ajax-method="DELETE">
+                                    <i class="material-icons align-middle">clear</i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+        <div class="col-12 col-md-6 col-lg-4 col-xl-3">
+            <div class="card h-100">
+                <div class="card-body d-flex align-items-center justify-content-center">
+                    <form action="#" id="upload-form">
+                        <input type="file" class="d-none" id="upload-file" accept="image/" data-ajax-url="{{ path("api_store_item_create_asset", {"id": storeItemId}) }}" data-ajax-method="POST">
+                    </form>
+                    <button class="btn btn-sm btn-primary p-2 rounded-circle" id="upload-btn">
+                        <i class="material-icons align-middle">
+                            add
+                        </i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

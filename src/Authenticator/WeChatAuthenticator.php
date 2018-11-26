@@ -139,7 +139,7 @@ class WeChatAuthenticator extends AbstractGuardAuthenticator {
     public function start(Request $request, AuthenticationException $authException = null) {
         return new JsonResponse([
             "status" => "failure",
-            "message" => "API Authentication Required"
+            "message" => "WeChat Authentication Required"
         ], Response::HTTP_UNAUTHORIZED);
     }
 

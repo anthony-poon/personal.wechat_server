@@ -28,9 +28,8 @@ class StoreItemController extends Controller {
     public function listStoreItems(EntityTableHelper $helper, RouterInterface $router) {
         $repo = $this->getDoctrine()->getRepository(AbstractStoreItem::class);
         $storeItems = $repo->findAll();
-        //$helper->setAddPath("store_item_create");
-        //$helper->setDelPath("store_item_delete");
-        $helper->setEditPath("store_item_edit");
+        $helper->addButton("Edit", "store_item_edit");
+        $helper->addButton("Edit Assets", "store_item_edit_assets");
         $helper->setHeader([
             "#",
             "Name",
@@ -47,10 +46,10 @@ class StoreItemController extends Controller {
                 $storeItem->getId(),
                 $storeItem->getName(),
                 $storeItem->getType(),
-                $storeItem->isDisabled() ? "True" : "False",
+                $storeItem->isDisabled() ? "False" : "True",
                 $storeItem->isTraded() ? "True" : "False",
                 $storeItem->getVisitorCount() + $storeItem->getVisitorCountModification(),
-                $storeItem->getCreateTime()->format("Y-m-d")
+                $storeItem->getCreateDate()->format("Y-m-d")
             ]);
         }
 
@@ -90,9 +89,31 @@ class StoreItemController extends Controller {
         return $this->render("render/simple_form.html.twig", [
             "title" => "Edit Item",
             "form" => $form->createView(),
-            "additional_template" => [
-                "path" => "component/view/store_items/btn_bar.html.twig"
-            ]
         ]);
     }
+
+    /**
+     * @Route("/admin/store-items/edit/{id}/assets", name="store_item_edit_assets")
+     */
+    public function editAssets(int $id, Request $request) {
+        $repo = $this->getDoctrine()->getRepository(AbstractStoreItem::class);
+        /* @var AbstractStoreItem $storeItem */
+        $storeItem = $repo->find($id);
+        $assets = $storeItem->getAssets();
+        $rtn = [
+            "storeItemId" => $id
+        ];
+        foreach ($assets as $asset) {
+            /* @var \App\Entity\Base\Asset $asset */
+            $rtn["assets"][] = [
+                "id" => $asset->getId(),
+                "ownerId" => $storeItem->getStoreFront()->getOwner()->getId(),
+                "owner" => $storeItem->getStoreFront()->getOwner()->getFullName(),
+                "type" => $storeItem->getType(),
+                "createDate" => $asset->getCreateDate()->format("Y-m-d H:i:s")
+            ];
+        }
+        return $this->render("render/store_items/edit_assets.html.twig", $rtn);
+    }
+
 }

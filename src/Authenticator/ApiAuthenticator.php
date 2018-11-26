@@ -9,6 +9,7 @@
 namespace App\Authenticator;
 
 use App\Entity\Base\SecurityGroup;
+use App\Entity\Base\User;
 use App\Entity\Core\GlobalValue;
 use App\Entity\Core\WeChatUser;
 use Doctrine\ORM\EntityManagerInterface;
@@ -32,16 +33,21 @@ class ApiAuthenticator extends AbstractGuardAuthenticator {
     }
 
     public function supports(Request $request) {
-        return !empty($request->headers->get("Authorization"));
+        return !empty($request->headers->get("Authorization")) || !empty($request->getSession()->get("userId"));
     }
 
     public function getCredentials(Request $request) {
         return [
-            "openId" => $request->headers->get("Authorization")
+            "openId" => $request->headers->get("Authorization"),
+            "userId" => $request->getSession()->get("userId")
         ];
     }
 
     public function getUser($credentials, UserProviderInterface $userProvider) {
+        if ($credentials["userId"]) {
+            $user = $this->em->getRepository(User::class)->find($credentials["userId"]);
+            return $user;
+        }
         if ($credentials["openId"]) {
             $user = $this->em->getRepository(WeChatUser::class)->findOneBy([
                 "weChatOpenId" => $credentials["openId"]
@@ -79,30 +85,24 @@ class ApiAuthenticator extends AbstractGuardAuthenticator {
 
     public function onAuthenticationSuccess(Request $request, TokenInterface $token, $providerKey) {
         $user = $token->getUser();
-        $session = new Session();
-        $session->start();
-        $session->set("openId", $user->getWeChatOpenId());
-        $repo = $this->em->getRepository(GlobalValue::class);
-        /* @var GlobalValue $gv */
-        $gv = $repo->findOneBy([
-            "key" => "visitorCount"
-        ]);
-        $count = (int) $gv->getValue() + 1;
-        $gv->setValue($count);
-        $this->em->persist($gv);
-        $this->em->flush();
-        if ("security_api_login" === $request->attributes->get("_route") && $request->isMethod("POST") && $request->getContentType() === "json") {
-            return new JsonResponse([
-                'login' => true,
-                'sessionId' => $session->getId(),
-                'visitorCount' => $count,
-                'user' => [
-                    'id' => $user->getId(),
-                    'fullName' => $user->getFullName(),
-                    'username' => $user->getUsername(),
-                    'openId' => $user->getWeChatOpenId(),
-                ]
+        if ($user instanceof WeChatUser) {
+            $repo = $this->em->getRepository(GlobalValue::class);
+            /* @var GlobalValue $gv */
+            $gv = $repo->findOneBy([
+                "key" => "visitorCount"
             ]);
+            $count = (int) $gv->getValue() + 1;
+            $gv->setValue($count);
+            $this->em->persist($gv);
+            $this->em->flush();
+            if ("security_api_login" === $request->attributes->get("_route") && $request->isMethod("POST") && $request->getContentType() === "json") {
+                return new JsonResponse([
+                    'login' => true,
+                    'sessionId' => $request->getSession()->getId(),
+                    'visitorCount' => $count,
+                    'user' => $user->jsonSerialize()
+                ]);
+            }
         }
         return null;
     }

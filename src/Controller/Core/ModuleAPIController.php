@@ -55,8 +55,8 @@ class ModuleAPIController extends Controller {
             }
         }
         usort($rtn, function($arr1, $arr2) {
-            if ($arr1["isPremium"] xor $arr2["isPremium"]) {
-                return -($arr1["isPremium"] <=> $arr2["isPremium"]);
+            if ($arr1["isSticky"] xor $arr2["isSticky"]) {
+                return -($arr1["isSticky"] <=> $arr2["isSticky"]);
             }
             return -($arr1["createDate"] <=> $arr2["createDate"]);
         });
@@ -125,7 +125,8 @@ class ModuleAPIController extends Controller {
         $storeItem->setIsTraded(false);
         $storeItem->setPrice((float) $json["price"]);
         $storeItem->setName($json["name"]);
-        $storeItem->setDescription($json["description"]);
+        $storeItem->setDescription($json["description"] ?? null);
+        $storeItem->setWeChatId($json["weChatId"] ?? null);
         $em = $this->getDoctrine()->getManager();
         $em->persist($storeItem);
         $em->flush();

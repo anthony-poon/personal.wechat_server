@@ -8,7 +8,6 @@
 
 namespace App\Command;
 
-use App\Entity\Base\Asset;
 use App\Entity\Base\SecurityGroup;
 use App\Entity\Core\AbstractModule;
 use App\Entity\Core\AbstractStoreFront;
@@ -18,6 +17,7 @@ use App\Entity\Core\Housing\HousingStoreFront;
 use App\Entity\Core\SecondHand\SecondHandItem;
 use App\Entity\Core\SecondHand\SecondHandModule;
 use App\Entity\Core\SecondHand\SecondHandStoreFront;
+use App\Entity\Core\StoreItemAsset;
 use App\Entity\Core\Ticketing\TicketingItem;
 use App\Entity\Core\Ticketing\TicketingModule;
 use App\Entity\Core\Ticketing\TicketingStoreFront;
@@ -62,7 +62,7 @@ class DemoCommand extends Command {
         for($i = 1; $i <= self::DEMO_USER_COUNT; $i ++) {
             $output->writeln("Creating Demo User user_$i");
             $user = $this->initUser("user_$i");
-            if ($i = self::DEMO_USER_COUNT) {
+            if ($i == self::DEMO_USER_COUNT) {
                 $user->setIsPremium(true);
             }
             $users[] = $user;
@@ -89,7 +89,7 @@ class DemoCommand extends Command {
             $user = new WeChatUser();
             $user->setUsername($username);
             $user->setFullName($username);
-            $user->setWeChatOpenId("_".$username);
+            $user->setWeChatOpenId($username);
             $userGroup->getChildren()->add($user);
         }
         $user->setPlainPassword($password);
@@ -146,7 +146,7 @@ class DemoCommand extends Command {
             }
             $date = new \DateTimeImmutable();
             $offset = rand(1,5);
-            $storeFront->setCreateTime($date->modify("-$offset day"));
+            $storeFront->setCreateDate($date->modify("-$offset day"));
             $storeFronts[] = $storeFront;
             $this->em->persist($storeFront);
         }
@@ -171,15 +171,19 @@ class DemoCommand extends Command {
                         $item->setPrice(rand(1,4) * 100);
                         $item->setVisitorCount(rand(1, 10000));
                         foreach (array_rand($this->placeholderPic, 3) as $index) {
-                            $asset = new Asset();
+                            $asset = new StoreItemAsset();
                             $asset->setNamespace(SecondHandItem::class);
                             $asset->setMimeType("image/jpeg");
                             $asset->setBase64($this->placeholderPic[$index]);
-                            $item->getAssets()->add($asset);
+                            $date = new DateTimeImmutable();
+                            $offset = rand(1,5);
+                            $asset->setCreateDate($date->modify("-$offset day"));
+                            $asset->setStoreItem($item);
+                            $this->em->persist($asset);
                         }
                         $date = new DateTimeImmutable();
                         $offset = rand(1,5);
-                        $item->setCreateTime($date->modify("-$offset day"));
+                        $item->setCreateDate($date->modify("-$offset day"));
                         $this->em->persist($item);
                     }
                     $items[] = $item;
@@ -203,15 +207,19 @@ class DemoCommand extends Command {
                         $item->setDuration(rand(10, 730));
                         $item->setPropertyType("_type_1");
                         foreach (array_rand($this->placeholderPic, 3) as $index) {
-                            $asset = new Asset();
+                            $asset = new StoreItemAsset();
                             $asset->setNamespace(SecondHandItem::class);
                             $asset->setMimeType("image/jpeg");
                             $asset->setBase64($this->placeholderPic[$index]);
-                            $item->getAssets()->add($asset);
+                            $date = new DateTimeImmutable();
+                            $offset = rand(1,5);
+                            $asset->setCreateDate($date->modify("-$offset day"));
+                            $asset->setStoreItem($item);
+                            $this->em->persist($asset);
                         }
                         $date = new DateTimeImmutable();
                         $offset = rand(1,5);
-                        $item->setCreateTime($date->modify("-$offset day"));
+                        $item->setCreateDate($date->modify("-$offset day"));
                         $this->em->persist($item);
                     }
                     $items[] = $item;
@@ -221,7 +229,7 @@ class DemoCommand extends Command {
                 /* @var HousingStoreFront $storeFront */
                 for ($i = 1; $i <= self::DEMO_STORE_ITEM_COUNT; $i ++) {
                     $name = "_ticketing_item_$i";
-                    $item = $storeFront->getStoreItems()->filter(function(HousingItem $item) use ($name) {
+                    $item = $storeFront->getStoreItems()->filter(function(TicketingItem $item) use ($name) {
                         return $item->getName() === $name;
                     })->first();
                     if (!$item) {
@@ -235,14 +243,18 @@ class DemoCommand extends Command {
                         $offset = rand(1, 720);
                         $item->setValidTill($date->modify("+$offset day"));
                         foreach (array_rand($this->placeholderPic, 3) as $index) {
-                            $asset = new Asset();
+                            $asset = new StoreItemAsset();
                             $asset->setNamespace(SecondHandItem::class);
                             $asset->setMimeType("image/jpeg");
                             $asset->setBase64($this->placeholderPic[$index]);
-                            $item->getAssets()->add($asset);
+                            $date = new DateTimeImmutable();
+                            $offset = rand(1,5);
+                            $asset->setCreateDate($date->modify("-$offset day"));
+                            $asset->setStoreItem($item);
+                            $this->em->persist($asset);
                         }
                         $offset = rand(1,5);
-                        $item->setCreateTime($date->modify("-$offset day"));
+                        $item->setCreateDate($date->modify("-$offset day"));
                         $this->em->persist($item);
                     }
                     $items[] = $item;

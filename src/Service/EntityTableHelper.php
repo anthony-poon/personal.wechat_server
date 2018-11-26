@@ -12,43 +12,22 @@ class EntityTableHelper {
     public const COL_STRING = "string";
 	private $header = [];
 	private $table = [];
-	private $addPath = "";
-	private $editPath = "";
-	private $delPath = "";
 	private $router;
 	private $columnType = [];
 	private $title;
+	private $btn = [];
 
 	public function __construct(\Symfony\Component\Routing\RouterInterface $router) {
 		$this->router = $router;
 	}
 
-	/**
-	 * @param string $addPath
-	 * @return EntityTableHelper
-	 */
-	public function setAddPath(string $addPath): EntityTableHelper {
-		$this->addPath = $this->router->getRouteCollection()->get($addPath)->getPath();
-		return $this;
-	}
-
-	/**
-	 * @param string $editPath
-	 * @return EntityTableHelper
-	 */
-	public function setEditPath(string $editPath): EntityTableHelper {
-		$this->editPath = $this->router->getRouteCollection()->get($editPath)->getPath();
-		return $this;
-	}
-
-	/**
-	 * @param string $delPath
-	 * @return EntityTableHelper
-	 */
-	public function setDelPath(string $delPath): EntityTableHelper {
-		$this->delPath = $this->router->getRouteCollection()->get($delPath)->getPath();
-		return $this;
-	}
+	public function addButton(string $name, string $path): EntityTableHelper {
+	    $this->btn[] = [
+	        "name" => $name,
+            "path" => $this->router->getRouteCollection()->get($path)->getPath()
+        ];
+	    return $this;
+    }
 
 	public function addRow(int $index,array $row) {
 		$this->table[$index] = $row;
@@ -92,11 +71,9 @@ class EntityTableHelper {
 		return [
 			"title" => $this->title,
             "column" => json_encode($column),
+            "btn" => json_encode($this->btn),
 			"table" => $this->table,
 			"header" => $this->header,
-			"addPath" => $this->addPath,
-			"delPath" => $this->delPath,
-			"editPath" => $this->editPath
 		];
 	}
 }

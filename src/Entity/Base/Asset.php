@@ -16,6 +16,9 @@ use Symfony\Component\Validator\Constraint as Assert;
  * @package App\Entity\Base
  * @ORM\Table(name="asset")
  * @ORM\Entity()
+ * @ORM\HasLifecycleCallbacks()
+ * @ORM\InheritanceType("JOINED")
+ * @ORM\DiscriminatorColumn(name="asset_type", type="string")
  */
 
 class Asset {
@@ -45,6 +48,12 @@ class Asset {
      * @ORM\Column(type="string", length=256, nullable=true)
      */
     private $mimeType;
+
+    /**
+     * @ORM\Column(type="datetime_immutable")
+     * @var \DateTimeInterface
+     */
+    private $createDate;
 
     /**
      * @return int
@@ -108,4 +117,28 @@ class Asset {
         return $this;
     }
 
+    /**
+     * @return \DateTimeInterface
+     */
+    public function getCreateDate(): \DateTimeInterface {
+        return $this->createDate;
+    }
+
+    /**
+     * @param \DateTimeInterface $createDate
+     * @return Asset
+     */
+    public function setCreateDate(\DateTimeInterface $createDate): Asset {
+        $this->createDate = $createDate;
+        return $this;
+    }
+
+    /**
+     * @ORM\PrePersist
+     */
+    public function onPrePersist() {
+        if (!$this->createDate) {
+            $this->createDate = new \DateTimeImmutable();
+        }
+    }
 }

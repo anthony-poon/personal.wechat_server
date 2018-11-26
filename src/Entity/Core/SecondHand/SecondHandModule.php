@@ -24,7 +24,4 @@ class SecondHandModule extends AbstractModule {
     public function getName(): string {
         return "二手交易";
     }
-    function getPrefix(): string {
-        return "M1_";
-    }
 }

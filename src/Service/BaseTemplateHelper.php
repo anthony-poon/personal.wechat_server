@@ -56,6 +56,10 @@ class BaseTemplateHelper {
                 "isVisible" => in_array("ROLE_ADMIN", $this->role),
                 "url" => $router->generate("user_list"),
             ], [
+                "text" => "Store Fronts",
+                "isVisible" => in_array("ROLE_ADMIN", $this->role),
+                "url" => $router->generate("store_front_list_store_fronts")
+            ], [
                 "text" => "Store Items",
                 "isVisible" => in_array("ROLE_ADMIN", $this->role),
                 "url" => $router->generate("store_item_list_store_items")

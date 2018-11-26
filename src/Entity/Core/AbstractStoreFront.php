@@ -56,10 +56,22 @@ abstract class AbstractStoreFront implements \JsonSerializable {
     private $storeItems;
 
     /**
+     * @var bool
+     * @ORM\Column(type="boolean")
+     */
+    private $isDisabled =false;
+
+    /**
+     * @var bool
+     * @ORM\Column(type="boolean")
+     */
+    private $isSticky = false;
+
+    /**
      * @ORM\Column(type="datetime_immutable")
      * @var \DateTimeInterface
      */
-    private $createTime;
+    private $createDate;
 
     public function __construct() {
         $this->storeItems = new ArrayCollection();
@@ -123,22 +135,56 @@ abstract class AbstractStoreFront implements \JsonSerializable {
     /**
      * @return \DateTimeInterface
      */
-    public function getCreateTime(): \DateTimeInterface {
-        return $this->createTime;
+    public function getCreateDate(): \DateTimeInterface {
+        return $this->createDate;
     }
 
     /**
-     * @param \DateTimeInterface $createTime
+     * @param \DateTimeInterface $createDate
      */
-    public function setCreateTime(\DateTimeInterface $createTime): void {
-        $this->createTime = $createTime;
+    public function setCreateDate(\DateTimeInterface $createDate): void {
+        $this->createDate = $createDate;
+    }
+
+    /**
+     * @return bool
+     */
+    public function isDisabled(): bool {
+        return $this->isDisabled;
+    }
+
+    /**
+     * @param bool $isDisabled
+     * @return AbstractStoreFront
+     */
+    public function setIsDisabled(bool $isDisabled): AbstractStoreFront {
+        $this->isDisabled = $isDisabled;
+        return $this;
+    }
+
+    /**
+     * @return bool
+     */
+    public function isSticky(): bool {
+        return $this->isSticky;
+    }
+
+    /**
+     * @param bool $isSticky
+     * @return AbstractStoreFront
+     */
+    public function setIsSticky(bool $isSticky): AbstractStoreFront {
+        $this->isSticky = $isSticky;
+        return $this;
     }
 
     /**
      * @ORM\PrePersist
      */
     public function onPrePersist() {
-        $this->createTime = new \DateTimeImmutable();
+        if (!$this->createDate) {
+            $this->createDate = new \DateTimeImmutable();
+        }
     }
 
     public function getType() {
@@ -156,15 +202,14 @@ abstract class AbstractStoreFront implements \JsonSerializable {
         foreach ($this->getStoreItems() as $storeItem) {
             /* @var \App\Entity\Core\AbstractStoreItem $storeItem */
             foreach ($storeItem->getAssets() as $asset) {
-                /* @var \App\Entity\Base\Asset $asset */
-                $assets[] = $asset->getId();
+                /* @var StoreItemAsset $asset */
+                $assets[] = $asset;
             }
         }
-        if ($assets) {
-            $asset = max($assets);
-        } else {
-            $asset = null;
-        }
+        usort($assets, function(StoreItemAsset $asset1, StoreItemAsset $asset2) {
+            return -($asset1->getCreateDate() <=> $asset2->getCreateDate());
+        });
+        $asset = $assets[0]->getId();
         $rtn = [
             "id" => $this->getId(),
             "type" => $this->getType(),
@@ -172,7 +217,7 @@ abstract class AbstractStoreFront implements \JsonSerializable {
             "isPremium" => $this->getOwner()->isPremium(),
             "name" => $this->getName(),
             "location" => $this->getModule()->getLocation()->getName(),
-            "createDate" => $this->getCreateTime()->format("Y-m-d H:i:s"),
+            "createDate" => $this->getCreateDate()->format("Y-m-d H:i:s"),
             "asset" => $asset
         ];
         return $rtn;
