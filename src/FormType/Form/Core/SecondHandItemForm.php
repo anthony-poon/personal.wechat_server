@@ -28,9 +28,15 @@ class SecondHandItemForm extends AbstractType{
                 "disabled" => true
             ])
             ->add("visitorCountModification", NumberType::class)
-            ->add("isDisabled", CheckboxType::class)
-            ->add("isTraded", CheckboxType::class)
-            ->add("isSticky", CheckboxType::class)
+            ->add("isDisabled", CheckboxType::class, [
+                "required" => false
+            ])
+            ->add("isTraded", CheckboxType::class, [
+                "required" => false
+            ])
+            ->add("isSticky", CheckboxType::class, [
+                "required" => false
+            ])
             ->add("createDate", DateTimeType::class, [
                 'widget' => 'single_text',
                 'input' => 'datetime_immutable'

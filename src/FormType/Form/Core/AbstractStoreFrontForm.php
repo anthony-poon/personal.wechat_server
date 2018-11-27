@@ -11,6 +11,7 @@ namespace App\FormType\Form\Core;
 use App\Entity\Core\AbstractStoreFront;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
+use Symfony\Component\Form\Extension\Core\Type\SubmitType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
@@ -18,8 +19,13 @@ use Symfony\Component\OptionsResolver\OptionsResolver;
 class AbstractStoreFrontForm extends AbstractType {
     public function buildForm(FormBuilderInterface $builder, array $options) {
         $builder->add("name", TextType::class)
-            ->add("isDisabled", CheckboxType::class)
-            ->add("isSticky", CheckboxType::class)
+            ->add("isDisabled", CheckboxType::class, [
+                "required" => false
+            ])
+            ->add("isSticky", CheckboxType::class, [
+                "required" => false
+            ])
+            ->add("Submit", SubmitType::class)
         ;
     }
 
