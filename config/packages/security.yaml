@@ -9,12 +9,13 @@ security:
         api:
             anonymous: ~
             pattern: ^/api/
+            stateless: true
             provider: wechat_provider
             user_checker: App\Service\UserChecker
             guard:
                 authenticators:
-                    - App\Authenticator\WeChatAuthenticator
                     - App\Authenticator\ApiAuthenticator
+                    #- App\Authenticator\WeChatAuthenticator
                 entry_point: App\Authenticator\ApiAuthenticator
         main:
             anonymous: ~

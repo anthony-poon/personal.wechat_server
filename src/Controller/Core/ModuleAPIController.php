@@ -113,7 +113,7 @@ class ModuleAPIController extends Controller {
                 break;
             case TicketingStoreFront::class:
                 $storeItem = new TicketingItem();
-                $storeItem->setValidTill(\DateTimeImmutable::createFromFormat("Y-m-d", $json["validTill"]));
+                $storeItem->setValidTill(\DateTimeImmutable::createFromFormat("Y-m-d", $json["effectiveData"]));
                 break;
             default:
                 throw new \Exception("Unsupported Module");

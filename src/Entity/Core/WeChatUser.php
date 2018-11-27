@@ -86,12 +86,10 @@ class WeChatUser extends User implements \JsonSerializable {
     }
 
     public function jsonSerialize() {
-        return [
-            "id" => $this->getId(),
-            "fullName" => $this->getFullName(),
-            "openId" => $this->getWeChatOpenId(),
-            "isPremium" => $this->isPremium(),
-        ];
+        $rtn = parent::jsonSerialize();
+        $rtn["openId"] = $this->getWeChatOpenId();
+        $rtn["isPremium"] = $this->isPremium();
+        return $rtn;
     }
 
 

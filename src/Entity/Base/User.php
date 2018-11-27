@@ -23,7 +23,7 @@ use Doctrine\Common\Collections\Collection;
  * @UniqueEntity("username", message="Username is taken already")
  * @UniqueEntity("email", message="Email is registered already")
  */
-class User extends DirectoryObject implements UserInterface, \Serializable {
+class User extends DirectoryObject implements UserInterface, \Serializable, \JsonSerializable {
     /**
      * @ORM\Column(type="string", length=512, unique=true)
      * @Assert\NotBlank()
@@ -237,4 +237,11 @@ class User extends DirectoryObject implements UserInterface, \Serializable {
 	public function getFriendlyClassName(): string {
 		return "User";
 	}
+
+    public function jsonSerialize() {
+        return [
+            "id" => $this->getId(),
+            "fullName" => $this->getFullName(),
+        ];
+    }
 }

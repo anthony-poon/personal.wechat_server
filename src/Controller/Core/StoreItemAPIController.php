@@ -142,7 +142,7 @@ class StoreItemAPIController extends Controller{
                 $storeItem->setLocation($json["location"]);
                 break;
             case TicketingItem::class:
-                $storeItem->setValidTill(\DateTimeImmutable::createFromFormat("Y-m-d", $json["validTill"]));
+                $storeItem->setValidTill(\DateTimeImmutable::createFromFormat("Y-m-d", $json["effectiveData"]));
                 break;
             default:
                 throw new \Exception("Unsupported Module");

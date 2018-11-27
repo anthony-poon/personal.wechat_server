@@ -90,8 +90,4 @@ abstract class AbstractModule implements JsonSerializable{
         ];
         return $rtn;
     }
-
-    public function unserialize($serialized) {
-        // TODO: Implement unserialize() method.
-    }
 }
