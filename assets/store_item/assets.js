@@ -28,7 +28,7 @@ $(document).ready(function() {
             url: url,
             data: file
         }).then(function(response){
-            //location.reload()
+            location.reload()
         }).catch(function (response) {
             console.log(response);
         })

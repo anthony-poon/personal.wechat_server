@@ -39,13 +39,15 @@ class ApiAuthenticator extends AbstractGuardAuthenticator {
         $json = json_decode($request->getContent(), true);
         $haveOpenId = !empty($json["openId"]) && "security_api_login" === $request->attributes->get("_route") && $request->isMethod("POST") && $request->getContentType() === "json";
         $haveToken = !empty($request->headers->get("Authorization"));
-        return $haveOpenId || $haveToken;
+        $haveSession = !empty($request->getSession()->get("userId"));
+        return $haveOpenId || $haveToken || $haveSession;
     }
 
     public function getCredentials(Request $request) {
         $json = json_decode($request->getContent(), true);
         $haveOpenId = !empty($json["openId"]) && "security_api_login" === $request->attributes->get("_route") && $request->isMethod("POST") && $request->getContentType() === "json";
         $haveToken = !empty($request->headers->get("Authorization"));
+        $haveSession = !empty($request->getSession()->get("userId"));
         preg_match("/Bearer (.+)$/", $request->headers->get("Authorization"), $match);
         if ($haveOpenId) {
             return [
@@ -59,6 +61,12 @@ class ApiAuthenticator extends AbstractGuardAuthenticator {
                 "jwt" => $match[1],
                 "issuer" => $request->getSchemeAndHttpHost(),
                 "audience" => $request->getClientIp()
+            ];
+        }
+        if ($haveSession) {
+            return [
+                "type" => "session",
+                "userId" => $request->getSession()->get("userId")
             ];
         }
         return false;
@@ -90,6 +98,10 @@ class ApiAuthenticator extends AbstractGuardAuthenticator {
                 $userId = $token->getClaim("userId");
                 $user = $this->em->getRepository(User::class)->find($userId);
                 return $user;
+            case "session":
+                $userId = $credentials["userId"];
+                $user = $this->em->getRepository(User::class)->find($userId);
+                return $user;
             default:
                 throw new \Exception("Unsupported authentication method");
         }
@@ -97,6 +109,7 @@ class ApiAuthenticator extends AbstractGuardAuthenticator {
 
     public function checkCredentials($credentials, UserInterface $user) {
         switch ($credentials["type"]) {
+            case "session":
             case "openId":
                 return true;
             case "token":
