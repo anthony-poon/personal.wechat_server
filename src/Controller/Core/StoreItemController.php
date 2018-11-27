@@ -35,9 +35,9 @@ class StoreItemController extends Controller {
             "Name",
             "Type",
             "Active",
-            "Traded",
             "Visitors",
-            "Created"
+            "Created",
+            "Expire"
         ]);
         $helper->setTitle("Store Item");
         foreach ($storeItems as $storeItem) {
@@ -46,10 +46,10 @@ class StoreItemController extends Controller {
                 $storeItem->getId(),
                 $storeItem->getName(),
                 $storeItem->getType(),
-                $storeItem->isDisabled() ? "False" : "True",
-                $storeItem->isTraded() ? "True" : "False",
+                $storeItem->isActive() ? "True" : "False",
                 $storeItem->getVisitorCount() + $storeItem->getVisitorCountModification(),
-                $storeItem->getCreateDate()->format("Y-m-d")
+                $storeItem->getCreateDate()->format("Y-m-d"),
+                $storeItem->getExpireDate()->format("Y-m-d")
             ]);
         }
 

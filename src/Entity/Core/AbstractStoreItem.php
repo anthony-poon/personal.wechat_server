@@ -285,8 +285,12 @@ abstract class AbstractStoreItem implements \JsonSerializable {
         return $match[1];
     }
 
-    public function isActive() {
-        return !$this->isDisabled() && !$this->isTraded() && $this->getStoreFront()->getOwner()->getIsActive();
+    public function isActive($showTraded = false, $showDisabled = false, $showExpired = false) {
+        $isActive = true;
+        $isActive = $isActive && ($showTraded || (!$showTraded && !$this->isTraded()));
+        $isActive = $isActive && ($showDisabled || (!$showDisabled && !$this->isDisabled()));
+        $isActive = $isActive && ($showExpired || (!$showExpired && !$this->isExpired()));
+        return $isActive;
     }
 
     /**
@@ -332,7 +336,7 @@ abstract class AbstractStoreItem implements \JsonSerializable {
             "visitorCount" => $this->getVisitorCount() + $this->getVisitorCountModification(),
             "createDate" => $this->getCreateDate()->format("Y-m-d H:i:s"),
             "expireDate" => $this->getExpireDate(),
-            "isActive" => $this->isActive(),
+            "isDisabled" => $this->isDisabled(),
             "isExpired" => $this->isExpired(),
             "isTraded" => $this->isTraded(),
             "assets" => $this->getAssets()->map(function(StoreItemAsset $asset){

@@ -36,6 +36,9 @@ class StoreItemAPIController extends Controller{
             if (!$module) {
                 throw new NotFoundHttpException("Cannot find module");
             }
+            $showTraded = $request->query->get("showTraded") == true;
+            $showDisabled = $request->query->get("showDisabled") == true;
+            $showExpired = $request->query->get("showExpired") == true;
             $rtn = [];
             /* @var AbstractModule $module */
             foreach ($module->getStoreFronts() as $storeFront) {
@@ -43,13 +46,15 @@ class StoreItemAPIController extends Controller{
                 foreach ($storeFront->getStoreItems() as $storeItem) {
                     /* @var AbstractStoreItem $storeItem */
                     if (empty($userId) || ($userId && $userId == $storeItem->getStoreFront()->getOwner()->getId())) {
-                        $arr = $storeItem->jsonSerialize();
-                        if ($arr["assets"]) {
-                            foreach (array_keys($arr["assets"]) as $key) {
-                                $arr["assets"][$key] = $this->generateUrl("api_asset_get_item", ["id" => $arr["assets"][$key]],UrlGeneratorInterface::ABSOLUTE_URL);
+                        if ($storeItem->isActive($showTraded, $showDisabled, $showExpired)) {
+                            $arr = $storeItem->jsonSerialize();
+                            if ($arr["assets"]) {
+                                foreach (array_keys($arr["assets"]) as $key) {
+                                    $arr["assets"][$key] = $this->generateUrl("api_asset_get_item", ["id" => $arr["assets"][$key]],UrlGeneratorInterface::ABSOLUTE_URL);
+                                }
                             }
+                            $rtn[] = $arr;
                         }
-                        $rtn[] = $arr;
                     }
                 }
             }

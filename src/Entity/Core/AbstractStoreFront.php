@@ -193,8 +193,10 @@ abstract class AbstractStoreFront implements \JsonSerializable {
         return $match[1];
     }
 
-    public function isActive() {
-        return $this->getOwner()->getIsActive();
+    public function isActive($showDisabled = false) {
+        $isActive = true;
+        $isActive = $isActive && ($showDisabled || (!$showDisabled && !$this->isDisabled()));
+        return $isActive;
     }
 
     public function jsonSerialize() {
@@ -213,9 +215,8 @@ abstract class AbstractStoreFront implements \JsonSerializable {
         $rtn = [
             "id" => $this->getId(),
             "type" => $this->getType(),
-            "isActive" => $this->isActive(),
             "isSticky" => $this->isSticky(),
-            "isPremium" => $this->getOwner()->isPremium(),
+            "isDisabled" => $this->isDisabled(),
             "name" => $this->getName(),
             "location" => $this->getModule()->getLocation()->getName(),
             "createDate" => $this->getCreateDate()->format("Y-m-d H:i:s"),

@@ -29,17 +29,20 @@ class StoreFrontAPIController extends Controller {
     /**
      * @Route("/api/store-fronts", methods={"GET"})
      */
-    public function getStoreFronts() {
+    public function getStoreFronts(Request $request) {
         $repo = $this->getDoctrine()->getRepository(AbstractStoreFront::class);
         $storeFronts = $repo->findAll();
+        $showDisabled = $request->query->get("showDisabled") == true;
         /* @var AbstractStoreFront $storeFront */
         $rtn = [];
         foreach ($storeFronts as $storeFront) {
-            $arr = $storeFront->jsonSerialize();
-            if ($arr["asset"]) {
-                $arr["asset"] = $this->generateUrl("api_asset_get_item", ["id" => $arr["asset"]],UrlGeneratorInterface::ABSOLUTE_URL);
+            if ($storeFront->isActive($showDisabled)) {
+                $arr = $storeFront->jsonSerialize();
+                if ($arr["asset"]) {
+                    $arr["asset"] = $this->generateUrl("api_asset_get_item", ["id" => $arr["asset"]],UrlGeneratorInterface::ABSOLUTE_URL);
+                }
+                $rtn[] = $arr;
             }
-            $rtn[] = $arr;
         }
         return new JsonResponse($rtn);
     }
@@ -47,14 +50,21 @@ class StoreFrontAPIController extends Controller {
     /**
      * @Route("/api/store-fronts/{id}", methods={"GET"}, requirements={"id"="[\w_]+"})
      */
-    public function getStoreFront(int $id) {
+    public function getStoreFront(int $id, Request $request) {
         $repo = $this->getDoctrine()->getRepository(AbstractStoreFront::class);
         $storeFront = $repo->find($id);
         if (!$storeFront) {
             throw new NotFoundHttpException("Entity not found.");
         }
+        $showTraded = $request->query->get("showTraded") == true;
+        $showDisabled = $request->query->get("showDisabled") == true;
+        $showExpired = $request->query->get("showExpired") == true;
         /* @var \App\Entity\Core\AbstractStoreFront $storeFront */
-        $storeItems = $storeFront->getStoreItems()->map(function(AbstractStoreItem $item) {
+        $storeItems = $storeFront->getStoreItems()
+            ->filter(function(AbstractStoreItem $item) use ($showTraded, $showDisabled, $showExpired){
+                return $item->isActive($showTraded, $showDisabled, $showExpired);
+            })
+            ->map(function(AbstractStoreItem $item) {
             $arr = $item->jsonSerialize();
             if ($arr["assets"]) {
                 foreach (array_keys($arr["assets"]) as $key) {

@@ -42,11 +42,16 @@ class ModuleAPIController extends Controller {
     /**
      * @Route("/api/modules/{id}", methods={"GET"}, requirements={"id"="[\w_]+"})
      */
-    public function getModule(int $id, ParameterBagInterface $bag) {
+    public function getModule(int $id, Request $request) {
         $repo = $this->getDoctrine()->getRepository(AbstractModule::class);
         $module = $repo->find($id);
         /* @var AbstractModule $module */
-        $rtn = $module->getStoreFronts()->map(function(AbstractStoreFront $storeFront) {
+        $showDisabled = $request->query->get("showDisabled") == true;
+        $rtn = $module->getStoreFronts()
+            ->filter(function(AbstractStoreFront $storeFront) use ($showDisabled){
+                return $storeFront->isActive($showDisabled);
+            })
+            ->map(function(AbstractStoreFront $storeFront) {
             return $storeFront->jsonSerialize();
         })->toArray();
         foreach (array_keys($rtn) as $key) {
