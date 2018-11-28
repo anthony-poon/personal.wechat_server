@@ -137,27 +137,12 @@ class StoreItemAPIController extends Controller{
     public function updateItem(int $id, Request $request) {
         $repo = $this->getDoctrine()->getRepository(AbstractStoreItem::class);
         $storeItem = $repo->find($id);
-        $json = json_decode($request->getContent(), true);
-        switch (get_class($storeItem)) {
-            case SecondHandItem::class:
-                break;
-            case HousingItem::class:
-                $storeItem->setDuration($json["duration"]);
-                $storeItem->setPropertyType($json["propertyType"]);
-                $storeItem->setLocation($json["location"]);
-                break;
-            case TicketingItem::class:
-                $storeItem->setValidTill(\DateTimeImmutable::createFromFormat("Y-m-d", $json["effectiveData"]));
-                break;
-            default:
-                throw new \Exception("Unsupported Module");
-                break;
+        if (empty($storeItem)) {
+            throw new NotFoundHttpException("Cannot location entity");
         }
-        /* @var $item \App\Entity\Core\AbstractStoreItem */
-        $storeItem->setPrice((float) $json["price"]);
-        $storeItem->setName($json["name"]);
-        $storeItem->setDescription($json["description"] ?? null);
-        $storeItem->setWeChatId($json["weChatId"] ?? null);
+        $this->denyAccessUnlessGranted(StoreItemVoter::UPDATE, $storeItem);
+        $json = json_decode($request->getContent(), true);
+        $storeItem->jsonDeserialize($json);
         $em = $this->getDoctrine()->getManager();
         $em->persist($storeItem);
         $em->flush();

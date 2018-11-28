@@ -46,4 +46,15 @@ class TicketingItem extends AbstractStoreItem {
         $rtn["validTill"] = $this->getValidTill()->format("Y-m-d");
         return $rtn;
     }
+
+    public function jsonDeserialize(array $json): AbstractStoreItem {
+        parent::jsonDeserialize($json);
+        isset($json["effectiveDate"]) && (
+            ($date = \DateTimeImmutable::createFromFormat("Y-m-d H:i:s", $json["effectiveDate"])) ||
+            ($date = \DateTimeImmutable::createFromFormat("Y-m-d", $json["effectiveDate"]))
+        ) && $this->setValidTill($date);
+        return $this;
+    }
+
+
 }

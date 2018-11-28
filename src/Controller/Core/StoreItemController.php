@@ -115,5 +115,4 @@ class StoreItemController extends Controller {
         }
         return $this->render("render/store_items/edit_assets.html.twig", $rtn);
     }
-
 }

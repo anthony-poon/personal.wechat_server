@@ -345,4 +345,60 @@ abstract class AbstractStoreItem implements \JsonSerializable {
         ];
         return $rtn;
     }
+
+    public function jsonDeserialize(array $json): AbstractStoreItem {
+        // Need to be careful that access right was checked prior to updating
+        isset($json["name"]) && $this->setName($json["name"]);
+        isset($json["description"]) && $this->setDescription($json["description"]);
+        isset($json["weChatId"]) && $this->setWeChatId($json["weChatId"]);
+        isset($json["createDate"]) && (
+            ($date = \DateTimeImmutable::createFromFormat("Y-m-d H:i:s", $json["createDate"])) ||
+            ($date = \DateTimeImmutable::createFromFormat("Y-m-d", $json["createDate"]))
+        ) && $this->setCreateDate($date);
+        isset($json["visitorCount"]) && $this->setVisitorCount($json["visitorCount"]);
+        isset($json["visitorCountModification"]) && $this->setVisitorCountModification($json["visitorCountModification"]);
+        isset($json["isTraded"]) && $this->setIsTraded($json["isTraded"]);
+        isset($json["isDisabled"]) && $this->setIsDisabled($json["isDisabled"]);
+        isset($json["isSticky"]) && $this->setIsSticky($json["isSticky"]);
+        isset($json["price"]) && $this->setPrice($json["price"]);
+//        foreach ($json as $key => $value) {
+//             switch ($key) {
+//                 case "name":
+//                     $this->setName($value);
+//                     break;
+//                 case "isTraded":
+//                     $this->setIsTraded((bool)$value);
+//                     break;
+//                 case "visitorCount":
+//                     $this->setVisitorCount($value);
+//                     break;
+//                 case "weChatId":
+//                     $this->setWeChatId($value);
+//                     break;
+//                 case "createDate":
+//                     $date = \DateTimeImmutable::createFromFormat("Y-m-d H:i:s", $value);
+//                     if (!$date) {
+//                         $date = \DateTimeImmutable::createFromFormat("Y-m-d", $value);
+//                     }
+//                     $this->setCreateDate($date);
+//                     break;
+//                 case "isDisabled":
+//                     $this->setIsDisabled((bool)$value);
+//                     break;
+//                 case "description":
+//                     $this->setDescription($value);
+//                     break;
+//                 case "price":
+//                     $this->setPrice($value);
+//                     break;
+//                 case "isSticky":
+//                     $this->setIsSticky((bool) $value);
+//                     break;
+//                 case "visitorCountModification":
+//                     $this->setVisitorCountModification($value);
+//                     break;
+//             }
+//        }
+        return $this;
+    }
 }
