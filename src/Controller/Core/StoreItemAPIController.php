@@ -11,10 +11,11 @@ namespace App\Controller\Core;
 use App\Entity\Core\AbstractModule;
 use App\Entity\Core\AbstractStoreFront;
 use App\Entity\Core\AbstractStoreItem;
-use App\Entity\Core\Housing\HousingItem;
-use App\Entity\Core\SecondHand\SecondHandItem;
+use Symfony\Component\Validator\Constraints as Assert;
 use App\Entity\Core\StoreItemAsset;
 use App\Entity\Core\Ticketing\TicketingItem;
+use App\Exception\ValidationException;
+use App\Service\JsonValidator;
 use App\Voter\StoreItemVoter;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -133,8 +134,9 @@ class StoreItemAPIController extends Controller{
 
     /**
      * @Route("/api/store-items/{id}", methods={"PUT"})
+     * @throws ValidationException
      */
-    public function updateItem(int $id, Request $request) {
+    public function updateItem(int $id, Request $request, JsonValidator $validator) {
         $repo = $this->getDoctrine()->getRepository(AbstractStoreItem::class);
         $storeItem = $repo->find($id);
         if (empty($storeItem)) {
@@ -142,6 +144,76 @@ class StoreItemAPIController extends Controller{
         }
         $this->denyAccessUnlessGranted(StoreItemVoter::UPDATE, $storeItem);
         $json = json_decode($request->getContent(), true);
+        $constraints = [
+            "name" => [
+                new Assert\Optional([
+                    new Assert\Regex([
+                        "pattern" => "/^[\w \-_]+/u",
+                        "message" => "The value contain invalid characters (Regex: /^[\w \-_]+/u)"
+                    ])
+                ]),
+            ],
+            "description" => [
+                new Assert\Optional([
+                    new Assert\Regex([
+                        "pattern" => "/^[\w \-_]+/u",
+                        "message" => "The value contain invalid characters (Regex: /^[\w \-_]+/u)"
+                    ])
+                ]),
+            ],
+            "weChatId" => [
+                new Assert\Optional([
+                    new Assert\Regex([
+                        "pattern" => "/^[\w \-_]*/u",
+                        "message" => "The value contain invalid characters (Regex: /^[\w \-_]+/u)"
+                    ])
+                ]),
+            ],
+            "isTraded" => [
+                new Assert\Optional(),
+            ],
+            "isDisabled" => [
+                new Assert\Optional(),
+            ],
+            "price" => [
+                new Assert\Optional([
+                    new Assert\GreaterThanOrEqual([
+                        "value" => 0
+                    ])
+                ]),
+            ],
+            "effectiveDate" => [
+                new Assert\Optional([
+                    new Assert\Date([
+                        "message" => "Invalid Date (yyyy-mm-dd)"
+                    ])
+                ]),
+            ],
+            "location" => [
+                new Assert\Optional([
+                    new Assert\Regex([
+                        "pattern" => "/^[\w \-_]+/u",
+                        "message" => "The value contain invalid characters (Regex: /^[\w \-_]+/u)"
+                    ])
+                ]),
+            ],
+            "propertyType" => [
+                new Assert\Optional([
+                    new Assert\Regex([
+                        "pattern" => "/^[\w \-_]+/u",
+                        "message" => "The value contain invalid characters (Regex: /^[\w \-_]+/u)"
+                    ])
+                ]),
+            ],
+            "durationDay" => [
+                new Assert\Optional([
+                    new Assert\GreaterThanOrEqual([
+                        "value" => 0
+                    ])
+                ]),
+            ]
+        ];
+        $validator->validate($json, $constraints);
         $storeItem->jsonDeserialize($json);
         $em = $this->getDoctrine()->getManager();
         $em->persist($storeItem);

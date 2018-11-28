@@ -15,7 +15,6 @@ security:
             guard:
                 authenticators:
                     - App\Authenticator\ApiAuthenticator
-                    #- App\Authenticator\WeChatAuthenticator
                 entry_point: App\Authenticator\ApiAuthenticator
         main:
             anonymous: ~

@@ -8,6 +8,7 @@
 
 namespace App\Listener;
 
+use App\Exception\ValidationException;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpKernel\Event\GetResponseForExceptionEvent;
@@ -27,7 +28,8 @@ class AjaxExceptionListener {
             $code = 400;
             $rtn = [
                 "status" => "failure",
-                "message" => $exception->getMessage()
+                "message" => $exception->getMessage(),
+                "type" => get_class($exception)
             ];
             switch (get_class($exception)) {
                 case NotFoundHttpException::class:
@@ -36,7 +38,8 @@ class AjaxExceptionListener {
                 case ValidationException::class:
                     /* @var \App\Exception\ValidationException $exception */
                     foreach ($exception->getErrors() as $k => $v) {
-                        $rtn["errors"][$k] = $v;
+                        preg_match("/\[([\w_\- ]+)\][^\[\]]*$/", $k, $match);
+                        $rtn["errors"][$match[1]] = $v;
                     }
                     break;
             }
