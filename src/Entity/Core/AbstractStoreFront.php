@@ -211,7 +211,11 @@ abstract class AbstractStoreFront implements \JsonSerializable {
         usort($assets, function(StoreItemAsset $asset1, StoreItemAsset $asset2) {
             return -($asset1->getCreateDate() <=> $asset2->getCreateDate());
         });
-        $asset = $assets[0]->getId();
+        if ($assets) {
+            $asset = $assets[0]->getId();
+        } else {
+            $asset = null;
+        }
         $rtn = [
             "id" => $this->getId(),
             "type" => $this->getType(),
