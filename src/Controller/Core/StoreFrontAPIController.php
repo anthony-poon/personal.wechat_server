@@ -10,13 +10,14 @@ namespace App\Controller\Core;
 
 use App\Entity\Core\AbstractStoreFront;
 use App\Entity\Core\AbstractStoreItem;;
-
+use Symfony\Component\Validator\Constraints as Assert;
 use App\Entity\Core\Housing\HousingItem;
 use App\Entity\Core\Housing\HousingStoreFront;
 use App\Entity\Core\SecondHand\SecondHandItem;
 use App\Entity\Core\SecondHand\SecondHandStoreFront;
 use App\Entity\Core\Ticketing\TicketingItem;
 use App\Entity\Core\Ticketing\TicketingStoreFront;
+use App\Service\JsonValidator;
 use App\Voter\StoreFrontVoter;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -85,7 +86,7 @@ class StoreFrontAPIController extends Controller {
     /**
      * @Route("/api/store-fronts/{id}/store-items", methods={"POST"}, requirements={"id"="[\w_]+"})
      */
-    public function createStoreItem(int $id, Request $request) {
+    public function createStoreItem(int $id, Request $request, JsonValidator $validator) {
         $repo = $this->getDoctrine()->getRepository(AbstractStoreFront::class);
         /* @var AbstractStoreFront $storeFront */
         $storeFront = $repo->find($id);
@@ -94,32 +95,78 @@ class StoreFrontAPIController extends Controller {
         }
         $this->denyAccessUnlessGranted(StoreFrontVoter::UPDATE, $storeFront);
         $json = json_decode($request->getContent(), true);
+        $constraints = [
+            "name" => [
+                new Assert\NotBlank()
+            ],
+            "description" => [
+                new Assert\Optional()
+            ],
+            "weChatId" => [
+                new Assert\Optional()
+            ],
+            "price" => [
+                new Assert\GreaterThanOrEqual([
+                    "value" => 0
+                ]),
+                new Assert\Type([
+                    "type" => "numeric"
+                ])
+            ],
+        ];
         switch (get_class($storeFront)) {
             case SecondHandStoreFront::class:
                 $storeItem = new SecondHandItem();
                 break;
             case HousingStoreFront::class:
                 $storeItem = new HousingItem();
-                $storeItem->setDuration($json["duration"]);
-                $storeItem->setPropertyType($json["propertyType"]);
-                $storeItem->setLocation($json["location"]);
+                $constraints["location"] = [
+                    new Assert\NotBlank()
+                ];
+                $constraints["propertyType"] = [
+                    new Assert\NotBlank()
+                ];
+                $constraints["durationDay"] = [
+                    new Assert\GreaterThanOrEqual([
+                        "value" => 0
+                    ]),
+                    new Assert\Type([
+                        "type" => "integer"
+                    ])
+                ];
                 break;
             case TicketingStoreFront::class:
                 $storeItem = new TicketingItem();
-                $storeItem->setValidTill(\DateTimeImmutable::createFromFormat("Y-m-d", $json["effectiveData"]));
+                $constraints["effectiveDate"] = [
+                    new Assert\Date([
+                        "message" => "Invalid Date (yyyy-mm-dd)"
+                    ])
+                ];
                 break;
             default:
                 throw new \Exception("Unsupported Module");
                 break;
         }
+        $validator->setAllowExtraFields(true);
         /* @var $item \App\Entity\Core\AbstractStoreItem */
-        $storeItem->setStoreFront($storeFront);
-        $storeItem->setVisitorCount(0);
-        $storeItem->setIsTraded(false);
-        $storeItem->setPrice((float) $json["price"]);
+        $validator->validate($json, $constraints);
         $storeItem->setName($json["name"]);
         $storeItem->setDescription($json["description"] ?? null);
         $storeItem->setWeChatId($json["weChatId"] ?? null);
+        $storeItem->setPrice($json["price"]);
+        switch (get_class($storeItem)) {
+            case SecondHandItem::class:
+                break;
+            case HousingItem::class:
+                $storeItem->setDuration($json["durationDay"]);
+                $storeItem->setPropertyType($json["propertyType"]);
+                $storeItem->setLocation($json["location"]);
+                break;
+            case TicketingItem::class:
+                $storeItem->setValidTill(\DateTimeImmutable::createFromFormat("Y-m-d", $json["createDate"]));
+                break;
+        }
+        $storeItem->setStoreFront($storeFront);
         $em = $this->getDoctrine()->getManager();
         $em->persist($storeItem);
         $em->flush();

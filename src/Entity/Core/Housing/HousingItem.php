@@ -92,14 +92,4 @@ class HousingItem extends AbstractStoreItem {
         $rtn["durationDay"] = $this->getDuration();
         return $rtn;
     }
-
-    public function jsonDeserialize(array $json): AbstractStoreItem {
-        parent::jsonDeserialize($json);
-        isset($json["location"]) && $this->setLocation($json["location"]);
-        isset($json["propertyType"]) && $this->setPropertyType($json["propertyType"]);
-        isset($json["durationDay"]) && $this->setDuration($json["durationDay"]);
-        return $this;
-    }
-
-
 }

@@ -11,6 +11,8 @@ namespace App\Controller\Core;
 use App\Entity\Core\AbstractModule;
 use App\Entity\Core\AbstractStoreFront;
 use App\Entity\Core\AbstractStoreItem;
+use App\Entity\Core\Housing\HousingItem;
+use App\Entity\Core\SecondHand\SecondHandItem;
 use Symfony\Component\Validator\Constraints as Assert;
 use App\Entity\Core\StoreItemAsset;
 use App\Entity\Core\Ticketing\TicketingItem;
@@ -146,75 +148,72 @@ class StoreItemAPIController extends Controller{
         $json = json_decode($request->getContent(), true);
         $constraints = [
             "name" => [
-                new Assert\Optional([
-                    new Assert\Regex([
-                        "pattern" => "/^[\w \-_]+/u",
-                        "message" => "The value contain invalid characters (Regex: /^[\w \-_]+/u)"
-                    ])
-                ]),
+                new Assert\NotBlank()
             ],
             "description" => [
-                new Assert\Optional([
-                    new Assert\Regex([
-                        "pattern" => "/^[\w \-_]+/u",
-                        "message" => "The value contain invalid characters (Regex: /^[\w \-_]+/u)"
-                    ])
-                ]),
             ],
             "weChatId" => [
-                new Assert\Optional([
-                    new Assert\Regex([
-                        "pattern" => "/^[\w \-_]*/u",
-                        "message" => "The value contain invalid characters (Regex: /^[\w \-_]+/u)"
-                    ])
-                ]),
-            ],
-            "isTraded" => [
-                new Assert\Optional(),
-            ],
-            "isDisabled" => [
-                new Assert\Optional(),
             ],
             "price" => [
-                new Assert\Optional([
-                    new Assert\GreaterThanOrEqual([
-                        "value" => 0
-                    ])
+                new Assert\GreaterThanOrEqual([
+                    "value" => 0
                 ]),
+                new Assert\Type([
+                    "type" => "numeric"
+                ])
             ],
             "effectiveDate" => [
-                new Assert\Optional([
-                    new Assert\Date([
-                        "message" => "Invalid Date (yyyy-mm-dd)"
-                    ])
-                ]),
+                new Assert\Date([
+                    "message" => "Invalid Date (yyyy-mm-dd)"
+                ])
             ],
             "location" => [
                 new Assert\Optional([
-                    new Assert\Regex([
-                        "pattern" => "/^[\w \-_]+/u",
-                        "message" => "The value contain invalid characters (Regex: /^[\w \-_]+/u)"
-                    ])
+                    new Assert\NotBlank()
                 ]),
             ],
             "propertyType" => [
-                new Assert\Optional([
-                    new Assert\Regex([
-                        "pattern" => "/^[\w \-_]+/u",
-                        "message" => "The value contain invalid characters (Regex: /^[\w \-_]+/u)"
-                    ])
-                ]),
+                new Assert\NotBlank()
             ],
             "durationDay" => [
-                new Assert\Optional([
-                    new Assert\GreaterThanOrEqual([
-                        "value" => 0
-                    ])
+                new Assert\GreaterThanOrEqual([
+                    "value" => 0
                 ]),
+                new Assert\Type([
+                    "type" => "integer"
+                ])
+            ],
+            "isDisabled" => [
+                new Assert\EqualTo([
+                    "value" => true,
+                    "message" => "Cannot undelete the item using API"
+                ]),
+                new Assert\Type([
+                    "type" => "boolean"
+                ])
             ]
         ];
+        $validator->setAllowExtraFields(true);
+        $validator->setAllowMissingFields(true);
         $validator->validate($json, $constraints);
-        $storeItem->jsonDeserialize($json);
+        isset($json["name"]) && $storeItem->setName($json["name"]);
+        isset($json["description"]) && $storeItem->setDescription($json["description"]);
+        isset($json["weChatId"]) && $storeItem->setWeChatId($json["weChatId"]);
+        isset($json["isTraded"]) && $storeItem->setIsTraded((bool) $json["isTraded"]);
+        isset($json["isDisabled"]) && $storeItem->setIsDisabled((bool) $json["isDisabled"]);
+        isset($json["price"]) && $storeItem->setPrice($json["price"]);
+        switch (get_class($storeItem)) {
+            case SecondHandItem::class:
+                break;
+            case HousingItem::class:
+                isset($json["durationDay"]) && $storeItem->setDuration($json["durationDay"]);
+                isset($json["propertyType"]) && $storeItem->setPropertyType($json["propertyType"]);
+                isset($json["location"]) && $storeItem->setLocation($json["location"]);
+                break;
+            case TicketingItem::class:
+                isset($json["createDate"]) && $storeItem->setValidTill(\DateTimeImmutable::createFromFormat("Y-m-d", $json["createDate"]));
+                break;
+        }
         $em = $this->getDoctrine()->getManager();
         $em->persist($storeItem);
         $em->flush();
