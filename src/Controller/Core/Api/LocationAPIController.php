@@ -6,7 +6,7 @@
  * Time: 9:57 AM
  */
 
-namespace App\Controller\Core;
+namespace App\Controller\Core\Api;
 
 use App\Entity\Core\Location;
 use Symfony\Component\HttpFoundation\JsonResponse;

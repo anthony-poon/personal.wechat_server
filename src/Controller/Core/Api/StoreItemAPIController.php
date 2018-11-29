@@ -6,7 +6,7 @@
  * Time: 5:19 PM
  */
 
-namespace App\Controller\Core;
+namespace App\Controller\Core\Api;
 
 use App\Entity\Core\AbstractModule;
 use App\Entity\Core\AbstractStoreFront;
