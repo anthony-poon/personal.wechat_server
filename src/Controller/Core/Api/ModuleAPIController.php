@@ -10,6 +10,7 @@ namespace App\Controller\Core\Api;
 
 use App\Entity\Core\AbstractModule;
 use App\Entity\Core\AbstractStoreFront;
+use App\Entity\Core\AbstractStoreItem;
 use App\Entity\Core\Housing\HousingItem;
 use App\Entity\Core\Housing\HousingModule;
 use App\Entity\Core\Housing\HousingStoreFront;
@@ -50,17 +51,48 @@ class ModuleAPIController extends Controller {
         $module = $repo->find($id);
         /* @var AbstractModule $module */
         $showDisabled = $request->query->get("showDisabled") == true;
-        $rtn = $module->getStoreFronts()
+        $showTraded = $request->query->get("showTraded") == true;
+        $showExpired = $request->query->get("showExpired") == true;
+        $query = preg_quote($request->query->get("queryStr"), "/");
+        $rtn = [];
+        $module
+            ->getStoreFronts()
             ->filter(function(AbstractStoreFront $storeFront) use ($showDisabled){
                 return $storeFront->isActive($showDisabled);
-            })
-            ->map(function(AbstractStoreFront $storeFront) {
-            return $storeFront->jsonSerialize();
-        })->toArray();
-        foreach (array_keys($rtn) as $key) {
-            if ($rtn[$key]["asset"]) {
-                $rtn[$key]["asset"] = $this->generateUrl("api_asset_get_item", ["id" => $rtn[$key]["asset"]],UrlGeneratorInterface::ABSOLUTE_URL);
-            }
+            })->map(function(AbstractStoreFront $storeFront) use (&$rtn, $query, $showTraded, $showDisabled, $showExpired){
+                foreach ($storeFront->getStoreItems() as $storeItem) {
+                    /* @var AbstractStoreItem $storeItem */
+                    if ($storeItem->isActive($showTraded, $showDisabled, $showExpired)) {
+                        if ($query) {
+                            $param = [
+                                $storeItem->getName(),
+                                $storeItem->getDescription(),
+                            ];
+                            switch (get_class($storeItem)) {
+                                case SecondHandItem::class:
+                                    break;
+                                case HousingItem::class:
+                                    /* @var HousingItem $storeItem */
+                                    $param[] = $storeItem->getPropertyType();
+                                    $param[] = $storeItem->getLocation();
+                                case TicketingItem::class:
+                                    break;
+                            }
+                            $match = preg_grep("/".$query."/", $param);
+                            if ($match) {
+                                $rtn[] = $storeItem->jsonSerialize();
+                            }
+                        } else {
+                            $rtn[] = $storeItem->jsonSerialize();
+                        }
+
+                    }
+                }
+            });
+        foreach ($rtn as &$storeItem) {
+            array_walk($storeItem["assets"], function(&$value) {
+                $value = $this->generateUrl("api_asset_get_item", ["id" => $value], UrlGeneratorInterface::ABSOLUTE_URL);
+            });
         }
         usort($rtn, function($arr1, $arr2) {
             if ($arr1["isSticky"] xor $arr2["isSticky"]) {
