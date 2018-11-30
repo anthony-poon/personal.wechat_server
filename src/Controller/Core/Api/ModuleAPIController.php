@@ -179,7 +179,7 @@ class ModuleAPIController extends Controller {
                 $storeItem->setLocation($json["location"]);
                 break;
             case TicketingItem::class:
-                $storeItem->setValidTill(\DateTimeImmutable::createFromFormat("Y-m-d", $json["createDate"]));
+                $storeItem->setValidTill(\DateTimeImmutable::createFromFormat("Y-m-d", $json["effectiveDate"]));
                 break;
         }
         $storeItem->setStoreFront($storeFront);
