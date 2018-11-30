@@ -63,6 +63,10 @@ class BaseTemplateHelper {
                 "text" => "Store Items",
                 "isVisible" => in_array("ROLE_ADMIN", $this->role),
                 "url" => $router->generate("store_item_list_store_items")
+            ], [
+                "text" => "Global Value",
+                "isVisible" => in_array("ROLE_ADMIN", $this->role),
+                "url" => $router->generate("global_value_edit")
             ]
         ];
     }

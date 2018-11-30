@@ -115,6 +115,11 @@ class InitCommand extends Command {
 
         $defaultGlobals = [
             "visitorCount" => "0",
+            "visitorCountMod" => "0",
+            "globalNotification" => "",
+            "moduleNotification" => "",
+            "storeFrontNotification" => "",
+            "storeItemNotification" => ""
         ];
         foreach ($defaultGlobals as $key => $value) {
             $this->initGlobalValue($key, $value);

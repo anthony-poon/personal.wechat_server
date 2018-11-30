@@ -206,19 +206,35 @@ class ApiAuthenticator extends AbstractGuardAuthenticator {
                 ->sign($signer, $appSecret)
                 ->getToken();
             $repo = $this->em->getRepository(GlobalValue::class);
-            $gv = $repo->findOneBy([
-                "key" => "visitorCount"
-            ]);
-            $count = (int) $gv->getValue() + 1;
-            $gv->setValue($count);
-            $this->em->persist($gv);
-            $this->em->flush();
-            return new JsonResponse([
+            $globalValues = $repo->findAll();
+            $rtn = [
                 'login' => true,
                 'token' => (string) $token,
-                'visitorCount' => $count,
-                'user' => $user->jsonSerialize()
-            ]);
+                'user' => $user->jsonSerialize(),
+                'config' => []
+            ];
+            $count = 0;
+            $countMod = 0;
+            foreach ($globalValues as $value) {
+                /* @var \App\Entity\Core\GlobalValue $value */
+                switch ($value->getKey()) {
+                    case "visitorCount":
+                        $value->setValue($value->getValue() + 1);
+                        $this->em->persist($value);
+                        $count = (int) $value->getValue();
+                        break;
+                    case "visitorCountMod":
+                        $countMod = (int) $value->getValue();
+                        break;
+                    default:
+                        $rtn["config"][$value->getKey()] = $value->getValue();
+                        break;
+                }
+
+            }
+            $rtn["config"]["visitorCount"] = $count + $countMod;
+            $this->em->flush();
+            return new JsonResponse($rtn);
         }
         return null;
     }
