@@ -42,22 +42,42 @@ class StoreItemAPIController extends Controller{
             $showTraded = $request->query->get("showTraded") == true;
             $showDisabled = $request->query->get("showDisabled") == true;
             $showExpired = $request->query->get("showExpired") == true;
+            $query = preg_quote($request->query->get("queryStr"), "/");
             $rtn = [];
             /* @var AbstractModule $module */
             foreach ($module->getStoreFronts() as $storeFront) {
                 /* @var AbstractStoreFront $storeFront */
                 foreach ($storeFront->getStoreItems() as $storeItem) {
                     /* @var AbstractStoreItem $storeItem */
-                    if (empty($userId) || ($userId && $userId == $storeItem->getStoreFront()->getOwner()->getId())) {
-                        if ($storeItem->isActive($showTraded, $showDisabled, $showExpired)) {
-                            $arr = $storeItem->jsonSerialize();
-                            if ($arr["assets"]) {
-                                foreach (array_keys($arr["assets"]) as $key) {
-                                    $arr["assets"][$key] = $this->generateUrl("api_asset_get_item", ["id" => $arr["assets"][$key]],UrlGeneratorInterface::ABSOLUTE_URL);
-                                }
-                            }
-                            $rtn[] = $arr;
+                    $shouldShow = true;
+                    $shouldShow = $shouldShow && (empty($userId) || $userId == $storeItem->getStoreFront()->getOwner()->getId());
+                    $shouldShow = $shouldShow && $storeItem->isActive($showTraded, $showDisabled, $showExpired);
+                    if ($shouldShow) {
+                        $param = [
+                            $storeItem->getName(),
+                            $storeItem->getDescription(),
+                        ];
+                        switch (get_class($storeItem)) {
+                            case SecondHandItem::class:
+                                break;
+                            case HousingItem::class:
+                                /* @var HousingItem $storeItem */
+                                $param[] = $storeItem->getPropertyType();
+                                $param[] = $storeItem->getLocation();
+                                break;
+                            case TicketingItem::class:
+                                break;
                         }
+                        $shouldShow = $shouldShow && (empty($query) || !empty(preg_grep("/".$query."/", $param)));
+                    }
+                    if ($shouldShow) {
+                        $arr = $storeItem->jsonSerialize();
+                        if ($arr["assets"]) {
+                            foreach (array_keys($arr["assets"]) as $key) {
+                                $arr["assets"][$key] = $this->generateUrl("api_asset_get_item", ["id" => $arr["assets"][$key]],UrlGeneratorInterface::ABSOLUTE_URL);
+                            }
+                        }
+                        $rtn[] = $arr;
                     }
                 }
             }
