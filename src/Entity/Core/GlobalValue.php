@@ -33,7 +33,7 @@ class GlobalValue {
 
     /**
      * @var string
-     * @ORM\Column(type="text", name="g_value")
+     * @ORM\Column(type="text", name="g_value", nullable=true)
      */
     private $value;
 
