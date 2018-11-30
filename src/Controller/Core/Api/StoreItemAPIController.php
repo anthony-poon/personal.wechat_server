@@ -68,7 +68,7 @@ class StoreItemAPIController extends Controller{
                             case TicketingItem::class:
                                 break;
                         }
-                        $shouldShow = $shouldShow && (empty($query) || !empty(preg_grep("/".$query."/", $param)));
+                        $shouldShow = $shouldShow && (empty($query) || !empty(preg_grep("/".$query."/iu", $param)));
                     }
                     if ($shouldShow) {
                         $arr = $storeItem->jsonSerialize();
