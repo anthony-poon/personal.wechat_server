@@ -63,7 +63,7 @@ class GlobalValue {
     /**
      * @return string
      */
-    public function getValue(): string {
+    public function getValue(): ?string {
         return $this->value;
     }
 
@@ -71,7 +71,7 @@ class GlobalValue {
      * @param string $value
      * @return GlobalValue
      */
-    public function setValue(string $value): GlobalValue {
+    public function setValue(?string $value): GlobalValue {
         $this->value = $value;
         return $this;
     }
