@@ -108,6 +108,7 @@ class StoreItemAPIController extends Controller{
         }
         $em = $this->getDoctrine()->getManager();
         $em->persist($storeItem);
+        $em->flush();
         return new JsonResponse($rtn);
     }
 
