@@ -33,7 +33,7 @@ class HousingItem extends AbstractStoreItem {
 
     /**
      * @var int
-     * @ORM\Column(type="integer")
+     * @ORM\Column(type="string", nullable=true)
      */
     private $duration;
 
@@ -70,17 +70,17 @@ class HousingItem extends AbstractStoreItem {
     }
 
     /**
-     * @return int
+     * @return string
      */
-    public function getDuration(): int {
+    public function getDuration(): ?string {
         return $this->duration;
     }
 
     /**
-     * @param int $duration
+     * @param string $duration
      * @return HousingItem
      */
-    public function setDuration(int $duration): HousingItem {
+    public function setDuration(?string $duration): HousingItem {
         $this->duration = $duration;
         return $this;
     }
@@ -89,7 +89,7 @@ class HousingItem extends AbstractStoreItem {
         $rtn = parent::jsonSerialize();
         $rtn["location"] = $this->getLocation();
         $rtn["propertyType"] = $this->getPropertyType();
-        $rtn["durationDay"] = $this->getDuration();
+        $rtn["duration"] = $this->getDuration();
         return $rtn;
     }
 }

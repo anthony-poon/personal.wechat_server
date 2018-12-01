@@ -196,7 +196,7 @@ class StoreItemAPIController extends Controller{
             "propertyType" => [
                 new Assert\NotBlank()
             ],
-            "durationDay" => [
+            "duration" => [
                 new Assert\GreaterThanOrEqual([
                     "value" => 0
                 ]),
@@ -227,7 +227,7 @@ class StoreItemAPIController extends Controller{
             case SecondHandItem::class:
                 break;
             case HousingItem::class:
-                isset($json["durationDay"]) && $storeItem->setDuration($json["durationDay"]);
+                isset($json["duration"]) && $storeItem->setDuration($json["duration"]);
                 isset($json["propertyType"]) && $storeItem->setPropertyType($json["propertyType"]);
                 isset($json["location"]) && $storeItem->setLocation($json["location"]);
                 break;

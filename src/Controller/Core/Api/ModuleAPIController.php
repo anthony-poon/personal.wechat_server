@@ -142,7 +142,7 @@ class ModuleAPIController extends Controller {
                 $constraints["propertyType"] = [
                     new Assert\NotBlank()
                 ];
-                $constraints["durationDay"] = [
+                $constraints["duration"] = [
                     new Assert\GreaterThanOrEqual([
                         "value" => 0
                     ]),
@@ -174,7 +174,7 @@ class ModuleAPIController extends Controller {
             case SecondHandItem::class:
                 break;
             case HousingItem::class:
-                $storeItem->setDuration($json["durationDay"]);
+                $storeItem->setDuration($json["duration"]);
                 $storeItem->setPropertyType($json["propertyType"]);
                 $storeItem->setLocation($json["location"]);
                 break;
