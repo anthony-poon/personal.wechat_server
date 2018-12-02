@@ -60,19 +60,16 @@ class GlobalValue {
         return $this;
     }
 
-    /**
-     * @return string
-     */
-    public function getValue(): ?string {
-        return $this->value;
+    public function getValue() {
+        return json_decode($this->value, true);
     }
 
     /**
      * @param string $value
      * @return GlobalValue
      */
-    public function setValue(?string $value): GlobalValue {
-        $this->value = $value;
+    public function setValue($value): GlobalValue {
+        $this->value = json_encode($value);
         return $this;
     }
 }
