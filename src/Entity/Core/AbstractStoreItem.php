@@ -88,7 +88,7 @@ abstract class AbstractStoreItem implements \JsonSerializable {
      * @var boolean
      * @ORM\Column(type="boolean")
      */
-    private $isSticky = false;
+    private $isAutoTop = false;
 
     /**
      * @ORM\Column(type="datetime_immutable")
@@ -101,6 +101,12 @@ abstract class AbstractStoreItem implements \JsonSerializable {
      * @ORM\Column(type="string", length=256, nullable=true)
      */
     private $weChatId;
+
+    /**
+     * @var \DateTimeImmutable
+     * @ORM\Column(type="datetime_immutable")
+     */
+    private $lastTopTime;
 
     public function __construct() {
         $this->assets = new ArrayCollection();
@@ -277,6 +283,13 @@ abstract class AbstractStoreItem implements \JsonSerializable {
         if (!$this->createDate) {
             $this->createDate = new \DateTimeImmutable();
         }
+        if (!$this->lastTopTime) {
+            $this->lastTopTime = new \DateTimeImmutable();
+        }
+    }
+
+    public function getAutoTopFrequency() {
+        return 24;
     }
 
     public function getType() {
@@ -296,16 +309,32 @@ abstract class AbstractStoreItem implements \JsonSerializable {
     /**
      * @return bool
      */
-    public function isSticky(): bool {
-        return $this->isSticky;
+    public function isAutoTop(): bool {
+        return $this->isAutoTop;
     }
 
     /**
-     * @param bool $isSticky
+     * @param bool $isAutoTop
      * @return AbstractStoreItem
      */
-    public function setIsSticky(bool $isSticky): AbstractStoreItem {
-        $this->isSticky = $isSticky;
+    public function setIsAutoTop(bool $isAutoTop): AbstractStoreItem {
+        $this->isAutoTop = $isAutoTop;
+        return $this;
+    }
+
+    /**
+     * @return \DateTimeImmutable
+     */
+    public function getLastTopTime(): \DateTimeImmutable {
+        return $this->lastTopTime;
+    }
+
+    /**
+     * @param \DateTimeImmutable $lastTopTime
+     * @return AbstractStoreItem
+     */
+    public function setLastTopTime(\DateTimeImmutable $lastTopTime): AbstractStoreItem {
+        $this->lastTopTime = $lastTopTime;
         return $this;
     }
 
@@ -326,7 +355,9 @@ abstract class AbstractStoreItem implements \JsonSerializable {
         $rtn = [
             "id" => $this->getId(),
             "type" => $this->getType(),
-            "isSticky" => $this->isSticky,
+            "isAutoTop" => $this->isAutoTop(),
+            "autoTopFrequency" => $this->getAutoTopFrequency(),
+            "lastTopTime" => $this->getLastTopTime()->format("Y-m-d H:i:s"),
             "location" => $this->getStoreFront()->getModule()->getLocation()->getName(),
             "name" => $this->getName(),
             "openId" => $this->getStoreFront()->getOwner()->getWeChatOpenId(),
@@ -335,7 +366,7 @@ abstract class AbstractStoreItem implements \JsonSerializable {
             "weChatId" => $this->getWeChatId(),
             "visitorCount" => $this->getVisitorCount() + $this->getVisitorCountModification(),
             "createDate" => $this->getCreateDate()->format("Y-m-d H:i:s"),
-            "expireDate" => $this->getExpireDate(),
+            "expireDate" => $this->getExpireDate()->format("Y-m-d H:i:s"),
             "isDisabled" => $this->isDisabled(),
             "isExpired" => $this->isExpired(),
             "isTraded" => $this->isTraded(),

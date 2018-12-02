@@ -67,6 +67,10 @@ class BaseTemplateHelper {
                 "text" => "Global Value",
                 "isVisible" => in_array("ROLE_ADMIN", $this->role),
                 "url" => $router->generate("global_value_edit")
+            ], [
+                "text" => "Sticky Ticket",
+                "isVisible" => in_array("ROLE_ADMIN", $this->role),
+                "url" => $router->generate("sticky_ticket_list_tickets")
             ]
         ];
     }

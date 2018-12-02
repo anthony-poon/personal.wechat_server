@@ -37,7 +37,7 @@ class HousingItemForm extends AbstractType{
             ->add("isTraded", CheckboxType::class, [
                 "required" => false
             ])
-            ->add("isSticky", CheckboxType::class, [
+            ->add("isAutoTop", CheckboxType::class, [
                 "required" => false
             ])
             ->add("createDate", DateTimeType::class, [

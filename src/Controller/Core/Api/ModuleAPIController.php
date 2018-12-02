@@ -17,6 +17,7 @@ use App\Entity\Core\Housing\HousingStoreFront;
 use App\Entity\Core\SecondHand\SecondHandItem;
 use App\Entity\Core\SecondHand\SecondHandModule;
 use App\Entity\Core\SecondHand\SecondHandStoreFront;
+use App\Entity\Core\StickyTicket;
 use App\Entity\Core\Ticketing\TicketingItem;
 use App\Entity\Core\Ticketing\TicketingModule;
 use App\Entity\Core\Ticketing\TicketingStoreFront;
@@ -64,10 +65,7 @@ class ModuleAPIController extends Controller {
             }
         };
         usort($rtn, function($arr1, $arr2) {
-            if ($arr1["isSticky"] xor $arr2["isSticky"]) {
-                return -($arr1["isSticky"] <=> $arr2["isSticky"]);
-            }
-            return -($arr1["createDate"] <=> $arr2["createDate"]);
+            return -($arr1["lastTopTime"] <=> $arr2["lastTopTime"]);
         });
         return new JsonResponse($rtn);
     }
@@ -179,6 +177,28 @@ class ModuleAPIController extends Controller {
         }
         $storeItem->setStoreFront($storeFront);
         $em = $this->getDoctrine()->getManager();
+        if (isset($json["stickyTicket"])) {
+            $tickets = $this->getDoctrine()->getRepository(StickyTicket::class)->findAll([
+                "code" => $json["stickyTicket"]
+            ]);
+            if (!$tickets) {
+                throw new NotFoundHttpException("Invalid Code");
+            }
+            $tickets = array_filter($tickets, function(StickyTicket $ticket){
+                return !$ticket->isConsumed() && ($ticket->getExpireDate() > (new \DateTimeImmutable()));
+            });
+            $ticket = reset($tickets);
+            /* @var StickyTicket $ticket */
+            if (!$ticket) {
+                throw new \Exception("Ticket expired or consumed.");
+            }
+            $storeItem->setIsAutoTop(true);
+            $storeItem->setLastTopTime($now);
+            $storeItem->getStoreFront()->setIsAutoTop(true);
+            $storeItem->getStoreFront()->setLastTopTime($now);
+            $ticket->setIsConsumed(true);
+            $em->persist($ticket);
+        }
         $em->persist($storeItem);
         $em->flush();
         return new JsonResponse($storeItem);

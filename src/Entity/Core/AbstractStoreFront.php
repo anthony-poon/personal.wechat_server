@@ -65,13 +65,19 @@ abstract class AbstractStoreFront implements \JsonSerializable {
      * @var bool
      * @ORM\Column(type="boolean")
      */
-    private $isSticky = false;
+    private $isAutoTop = false;
 
     /**
      * @ORM\Column(type="datetime_immutable")
      * @var \DateTimeInterface
      */
     private $createDate;
+
+    /**
+     * @var \DateTimeImmutable
+     * @ORM\Column(type="datetime_immutable")
+     */
+    private $lastTopTime;
 
     public function __construct() {
         $this->storeItems = new ArrayCollection();
@@ -165,16 +171,32 @@ abstract class AbstractStoreFront implements \JsonSerializable {
     /**
      * @return bool
      */
-    public function isSticky(): bool {
-        return $this->isSticky;
+    public function isAutoTop(): bool {
+        return $this->isAutoTop;
     }
 
     /**
-     * @param bool $isSticky
+     * @param bool $isAutoTop
      * @return AbstractStoreFront
      */
-    public function setIsSticky(bool $isSticky): AbstractStoreFront {
-        $this->isSticky = $isSticky;
+    public function setIsAutoTop(bool $isAutoTop): AbstractStoreFront {
+        $this->isAutoTop = $isAutoTop;
+        return $this;
+    }
+
+    /**
+     * @return \DateTimeImmutable
+     */
+    public function getLastTopTime(): \DateTimeImmutable {
+        return $this->lastTopTime;
+    }
+
+    /**
+     * @param \DateTimeImmutable $lastTopTime
+     * @return AbstractStoreFront
+     */
+    public function setLastTopTime(\DateTimeImmutable $lastTopTime): AbstractStoreFront {
+        $this->lastTopTime = $lastTopTime;
         return $this;
     }
 
@@ -185,6 +207,13 @@ abstract class AbstractStoreFront implements \JsonSerializable {
         if (!$this->createDate) {
             $this->createDate = new \DateTimeImmutable();
         }
+        if (!$this->lastTopTime) {
+            $this->lastTopTime = new \lastTopTime();
+        }
+    }
+
+    public function getAutoTopFrequency() {
+        return 24;
     }
 
     public function getType() {
@@ -219,7 +248,9 @@ abstract class AbstractStoreFront implements \JsonSerializable {
         $rtn = [
             "id" => $this->getId(),
             "type" => $this->getType(),
-            "isSticky" => $this->isSticky(),
+            "isAutoTop" => $this->isAutoTop(),
+            "lastTopTime" => $this->getLastTopTime()->format("Y-m-d H:i:s"),
+            "autoTopFrequency" => $this->getAutoTopFrequency(),
             "isDisabled" => $this->isDisabled(),
             "name" => $this->getName(),
             "location" => $this->getModule()->getLocation()->getName(),

@@ -13,6 +13,7 @@ use App\Entity\Core\AbstractStoreFront;
 use App\Entity\Core\AbstractStoreItem;
 use App\Entity\Core\Housing\HousingItem;
 use App\Entity\Core\SecondHand\SecondHandItem;
+use App\Entity\Core\StickyTicket;
 use Symfony\Component\Validator\Constraints as Assert;
 use App\Entity\Core\StoreItemAsset;
 use App\Entity\Core\Ticketing\TicketingItem;
@@ -82,10 +83,7 @@ class StoreItemAPIController extends Controller{
                 }
             }
             usort($rtn, function($arr1, $arr2) {
-                if ($arr1["isSticky"] xor $arr2["isSticky"]) {
-                    return -($arr1["isSticky"] <=> $arr2["isSticky"]);
-                }
-                return -($arr1["createDate"] <=> $arr2["createDate"]);
+                return -($arr1["lastTopTime"] <=> $arr2["lastTopTime"]);
             });
             return new JsonResponse($rtn);
         }
@@ -162,6 +160,7 @@ class StoreItemAPIController extends Controller{
     public function updateItem(int $id, Request $request, JsonValidator $validator) {
         $repo = $this->getDoctrine()->getRepository(AbstractStoreItem::class);
         $storeItem = $repo->find($id);
+        /* @var AbstractStoreItem $storeItem */
         if (empty($storeItem)) {
             throw new NotFoundHttpException("Cannot location entity");
         }
@@ -207,6 +206,9 @@ class StoreItemAPIController extends Controller{
                 new Assert\Type([
                     "type" => "boolean"
                 ])
+            ],
+            "stickyTicket" => [
+                new Assert\NotBlank()
             ]
         ];
         $validator->setAllowExtraFields(true);
@@ -231,6 +233,33 @@ class StoreItemAPIController extends Controller{
                 break;
         }
         $em = $this->getDoctrine()->getManager();
+        if (isset($json["stickyTicket"])) {
+            $tickets = $this->getDoctrine()->getRepository(StickyTicket::class)->findAll([
+                "code" => $json["stickyTicket"]
+            ]);
+            if (!$tickets) {
+                throw new NotFoundHttpException("Invalid Code");
+            }
+            $tickets = array_filter($tickets, function(StickyTicket $ticket){
+                return !$ticket->isConsumed() && ($ticket->getExpireDate() > (new \DateTimeImmutable()));
+            });
+            $ticket = reset($tickets);
+            /* @var StickyTicket $ticket */
+            if (!$ticket) {
+                throw new \Exception("Ticket expired or consumed.");
+            }
+            $now = new \DateTimeImmutable();
+            $offset = $storeItem->getAutoTopFrequency();
+            if ($now < $storeItem->getLastTopTime()->modify("+$offset hours")) {
+                throw new \Exception("Cannot change ordering within $offset hours");
+            }
+            $storeItem->setIsAutoTop(true);
+            $storeItem->setLastTopTime($now);
+            $storeItem->getStoreFront()->setIsAutoTop(true);
+            $storeItem->getStoreFront()->setLastTopTime($now);
+            $ticket->setIsConsumed(true);
+            $em->persist($ticket);
+        }
         $em->persist($storeItem);
         $em->flush();
         return new JsonResponse($storeItem);

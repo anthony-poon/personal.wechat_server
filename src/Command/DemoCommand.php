@@ -147,6 +147,7 @@ class DemoCommand extends Command {
             $date = new \DateTimeImmutable();
             $offset = rand(1,5);
             $storeFront->setCreateDate($date->modify("-$offset day"));
+            $storeFront->setLastTopTime($date->modify("-$offset day"));
             $storeFronts[] = $storeFront;
             $this->em->persist($storeFront);
         }
@@ -184,6 +185,7 @@ class DemoCommand extends Command {
                         $date = new DateTimeImmutable();
                         $offset = rand(1,5);
                         $item->setCreateDate($date->modify("-$offset day"));
+                        $item->setLastTopTime($date->modify("-$offset day"));
                         $this->em->persist($item);
                     }
                     $items[] = $item;
@@ -220,6 +222,7 @@ class DemoCommand extends Command {
                         $date = new DateTimeImmutable();
                         $offset = rand(1,5);
                         $item->setCreateDate($date->modify("-$offset day"));
+                        $item->setLastTopTime($date->modify("-$offset day"));
                         $this->em->persist($item);
                     }
                     $items[] = $item;
@@ -255,6 +258,7 @@ class DemoCommand extends Command {
                         }
                         $offset = rand(1,5);
                         $item->setCreateDate($date->modify("-$offset day"));
+                        $item->setLastTopTime($date->modify("-$offset day"));
                         $this->em->persist($item);
                     }
                     $items[] = $item;
