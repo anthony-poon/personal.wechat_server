@@ -197,12 +197,7 @@ class StoreItemAPIController extends Controller{
                 new Assert\NotBlank()
             ],
             "duration" => [
-                new Assert\GreaterThanOrEqual([
-                    "value" => 0
-                ]),
-                new Assert\Type([
-                    "type" => "integer"
-                ])
+                new Assert\NotBlank()
             ],
             "isDisabled" => [
                 new Assert\EqualTo([

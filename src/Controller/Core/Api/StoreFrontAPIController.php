@@ -127,12 +127,7 @@ class StoreFrontAPIController extends Controller {
                     new Assert\NotBlank()
                 ];
                 $constraints["duration"] = [
-                    new Assert\GreaterThanOrEqual([
-                        "value" => 0
-                    ]),
-                    new Assert\Type([
-                        "type" => "integer"
-                    ])
+                    new Assert\NotBlank()
                 ];
                 break;
             case TicketingStoreFront::class:
