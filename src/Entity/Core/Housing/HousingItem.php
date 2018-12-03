@@ -85,6 +85,10 @@ class HousingItem extends AbstractStoreItem {
         return $this;
     }
 
+    public function getExpireDate(): \DateTimeImmutable {
+        return $this->getCreateDate()->modify("+14 day");
+    }
+
     public function jsonSerialize() {
         $rtn = parent::jsonSerialize();
         $rtn["location"] = $this->getLocation();
