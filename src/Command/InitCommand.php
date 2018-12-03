@@ -131,7 +131,7 @@ class InitCommand extends Command {
         $this->entityManager->flush();
     }
 
-    private function initGlobalValue(string $key, string $value) {
+    private function initGlobalValue(string $key, $value) {
         $repo = $this->entityManager->getRepository(GlobalValue::class);
         $gv = $repo->findOneBy([
             "key" => $key
