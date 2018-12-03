@@ -229,7 +229,7 @@ class StoreItemAPIController extends Controller{
                 isset($json["location"]) && $storeItem->setLocation($json["location"]);
                 break;
             case TicketingItem::class:
-                isset($json["createDate"]) && $storeItem->setValidTill(\DateTimeImmutable::createFromFormat("Y-m-d", $json["createDate"]));
+                isset($json["effectiveDate"]) && $storeItem->setValidTill(\DateTimeImmutable::createFromFormat("Y-m-d", $json["effectiveDate"]));
                 break;
         }
         $em = $this->getDoctrine()->getManager();
@@ -250,7 +250,7 @@ class StoreItemAPIController extends Controller{
             }
             $now = new \DateTimeImmutable();
             $offset = $storeItem->getAutoTopFrequency();
-            if ($now < $storeItem->getLastTopTime()->modify("+$offset hours")) {
+            if ($storeItem->isAutoTop() && $now < $storeItem->getLastTopTime()->modify("+$offset hours")) {
                 throw new \Exception("Cannot change ordering within $offset hours");
             }
             $storeItem->setIsAutoTop(true);

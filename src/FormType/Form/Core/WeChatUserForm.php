@@ -17,7 +17,6 @@ class WeChatUserForm extends AbstractType {
             ->add("weChatOpenId", TextType::class, [
                 "disabled" => true
             ])
-            ->add("isPremium", CheckboxType::class)
             ->add("submit", SubmitType::class);
     }
 

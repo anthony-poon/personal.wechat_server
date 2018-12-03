@@ -339,11 +339,7 @@ abstract class AbstractStoreItem implements \JsonSerializable {
     }
 
     public function getExpireDate(): \DateTimeImmutable {
-        if ($this->getStoreFront()->getOwner()->isPremium()) {
-            return $this->getCreateDate()->modify("+14 day");
-        } else {
-            return $this->getCreateDate()->modify("+7 day");
-        }
+        return $this->getCreateDate()->modify("+7 day");
     }
 
     public function isExpired(): bool {

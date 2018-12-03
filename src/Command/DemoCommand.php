@@ -62,10 +62,7 @@ class DemoCommand extends Command {
         for($i = 1; $i <= self::DEMO_USER_COUNT; $i ++) {
             $output->writeln("Creating Demo User user_$i");
             $user = $this->initUser("user_$i");
-            if ($i == self::DEMO_USER_COUNT) {
-                $user->setIsPremium(true);
-            }
-            $users[] = $user;
+             $users[] = $user;
         }
         $storeFronts = [];
         foreach ($users as $user) {

@@ -20,12 +20,6 @@ use Doctrine\ORM\Mapping as ORM;
 class WeChatUser extends User implements \JsonSerializable {
 
     /**
-     * @var bool
-     * @ORM\Column(name="is_premium", type="boolean")
-     */
-    private $isPremium = false;
-
-    /**
      * @var Collection
      * @ORM\OneToMany(targetEntity="\App\Entity\Core\AbstractStoreFront", mappedBy="owner");
      */
@@ -36,22 +30,6 @@ class WeChatUser extends User implements \JsonSerializable {
      * @ORM\Column(type="string", length=512, nullable=true, unique=true, name="we_chat_open_id")
      */
     private $weChatOpenId;
-
-    /**
-     * @return bool
-     */
-    public function isPremium(): bool {
-        return $this->isPremium;
-    }
-
-    /**
-     * @param bool $isPremium
-     * @return WeChatUser
-     */
-    public function setIsPremium(bool $isPremium): WeChatUser {
-        $this->isPremium = $isPremium;
-        return $this;
-    }
 
     /**
      * @return Collection
@@ -88,7 +66,6 @@ class WeChatUser extends User implements \JsonSerializable {
     public function jsonSerialize() {
         $rtn = parent::jsonSerialize();
         $rtn["openId"] = $this->getWeChatOpenId();
-        $rtn["isPremium"] = $this->isPremium();
         return $rtn;
     }
 
