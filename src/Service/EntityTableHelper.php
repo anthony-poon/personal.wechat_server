@@ -21,16 +21,18 @@ class EntityTableHelper {
 		$this->router = $router;
 	}
 
-	public function addButton(string $name, string $path): EntityTableHelper {
+	public function addButton(string $name, string $path, ?array $param = null): EntityTableHelper {
 	    $this->btn[] = [
 	        "name" => $name,
-            "path" => $this->router->getRouteCollection()->get($path)->getPath()
+            "path" => $this->router->getRouteCollection()->get($path)->getPath(),
+            "param" => $param
         ];
 	    return $this;
     }
 
-	public function addRow(int $index,array $row) {
-		$this->table[$index] = $row;
+	public function addRow(int $index, array $row, ?array $param = null) {
+		$this->table[$index]["content"] = $row;
+		$this->table[$index]["param"] = json_encode($param);
 	}
 
 	/**

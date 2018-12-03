@@ -22,10 +22,12 @@ use Symfony\Component\OptionsResolver\OptionsResolver;
 class HousingItemForm extends AbstractType{
     public function buildForm(FormBuilderInterface $builder, array $options) {
         $builder->add("name", TextType::class)
-            ->add("description", TextType::class)
+            ->add("description", TextType::class, [
+                "required" => false
+            ])
             ->add("location", TextType::class)
             ->add("propertyType", TextType::class)
-            ->add("duration", NumberType::class)
+            ->add("duration", TextType::class)
             ->add("price", NumberType::class)
             ->add("visitorCount", NumberType::class, [
                 "disabled" => true

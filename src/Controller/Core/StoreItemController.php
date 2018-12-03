@@ -16,6 +16,7 @@ use App\FormType\Form\Core\HousingItemForm;
 use App\FormType\Form\Core\SecondHandItemForm;
 use App\FormType\Form\Core\TicketingItemForm;
 use App\Service\EntityTableHelper;
+use Doctrine\Common\Collections\ArrayCollection;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
@@ -25,19 +26,34 @@ class StoreItemController extends Controller {
     /**
      * @Route("/admin/store-items", name="store_item_list_store_items")
      */
-    public function listStoreItems(EntityTableHelper $helper, RouterInterface $router) {
+    public function listStoreItems(EntityTableHelper $helper, Request $request) {
         $repo = $this->getDoctrine()->getRepository(AbstractStoreItem::class);
+        $queries = $request->query->all();
         $storeItems = $repo->findAll();
+        foreach ($queries as $key => $value) {
+            switch ($key) {
+                case "storeFront":
+                    $storeItems = array_filter($storeItems, function(AbstractStoreItem $storeItem) use ($value){
+                        return $storeItem->getStoreFront()->getId() == $value;
+                    });
+                    break;
+                case "user":
+                    $storeItems = array_filter($storeItems, function(AbstractStoreItem $storeItem) use ($value){
+                        return $storeItem->getStoreFront()->getOwner()->getId() == $value;
+                    });
+                    break;
+            }
+        }
         $helper->addButton("Edit", "store_item_edit");
         $helper->addButton("Edit Assets", "store_item_edit_assets");
         $helper->setHeader([
             "#",
             "Name",
             "Type",
-            "Active",
-            "Visitors",
-            "Created",
-            "Expire"
+            "Location",
+            "Store Front Id",
+            "Module Id",
+            "Created"
         ]);
         $helper->setTitle("Store Item");
         foreach ($storeItems as $storeItem) {
@@ -46,10 +62,10 @@ class StoreItemController extends Controller {
                 $storeItem->getId(),
                 $storeItem->getName(),
                 $storeItem->getType(),
-                $storeItem->isActive() ? "True" : "False",
-                $storeItem->getVisitorCount() + $storeItem->getVisitorCountModification(),
-                $storeItem->getCreateDate()->format("Y-m-d"),
-                $storeItem->getExpireDate()->format("Y-m-d")
+                $storeItem->getStoreFront()->getModule()->getLocation()->getName(),
+                $storeItem->getStoreFront()->getId(),
+                $storeItem->getStoreFront()->getModule()->getId(),
+                $storeItem->getCreateDate()->format("Y-m-d")
             ]);
         }
 

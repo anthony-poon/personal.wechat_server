@@ -23,7 +23,7 @@ class WeChatUser extends User implements \JsonSerializable {
      * @var Collection
      * @ORM\OneToMany(targetEntity="\App\Entity\Core\AbstractStoreFront", mappedBy="owner");
      */
-    private $stores;
+    private $storeFronts;
 
     /**
      * @var string
@@ -34,17 +34,8 @@ class WeChatUser extends User implements \JsonSerializable {
     /**
      * @return Collection
      */
-    public function getStores(): Collection {
-        return $this->stores;
-    }
-
-    /**
-     * @param Collection $stores
-     * @return WeChatUser
-     */
-    public function setStores(Collection $stores): WeChatUser {
-        $this->stores = $stores;
-        return $this;
+    public function getStoreFronts(): Collection {
+        return $this->storeFronts;
     }
 
     /**

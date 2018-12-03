@@ -24,11 +24,15 @@ class StoreFrontController extends Controller {
         $repo = $this->getDoctrine()->getRepository(AbstractStoreFront::class);
         $storeFronts = $repo->findAll();
         $helper->addButton("Edit", "store_front_edit");
+        $helper->addButton("View Items", "store_item_list_store_items", [
+            "storeFront"
+        ]);
         $helper->setHeader([
             "#",
             "Name",
             "Type",
-            "Active",
+            "Location",
+            "Module Id",
             "Created"
         ]);
         $helper->setTitle("Store Fronts");
@@ -38,8 +42,11 @@ class StoreFrontController extends Controller {
                 $storeFront->getId(),
                 $storeFront->getName(),
                 $storeFront->getType(),
-                $storeFront->isDisabled() ? "False" : "True",
+                $storeFront->getModule()->getLocation()->getName(),
+                $storeFront->getModule()->getId(),
                 $storeFront->getCreateDate()->format("Y-m-d")
+            ], [
+                "storeFront" => $storeFront->getId()
             ]);
         }
 
@@ -68,4 +75,5 @@ class StoreFrontController extends Controller {
             "form" => $form->createView(),
         ]);
     }
+
 }

@@ -34,7 +34,7 @@ abstract class AbstractStoreFront implements \JsonSerializable {
 
     /**
      * @var WeChatUser
-     * @ORM\ManyToOne(targetEntity="WeChatUser", inversedBy="stores")
+     * @ORM\ManyToOne(targetEntity="WeChatUser", inversedBy="storeFronts")
      */
     protected $owner;
 
@@ -208,7 +208,7 @@ abstract class AbstractStoreFront implements \JsonSerializable {
             $this->createDate = new \DateTimeImmutable();
         }
         if (!$this->lastTopTime) {
-            $this->lastTopTime = new \lastTopTime();
+            $this->lastTopTime = new \DateTimeImmutable();
         }
     }
 

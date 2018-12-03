@@ -29,7 +29,9 @@ class StickyTicketForm extends AbstractType {
             'widget' => 'single_text',
             'input' => 'datetime_immutable',
             "disabled" => true
-        ])->add("isConsumed", CheckboxType::class)
+        ])->add("isConsumed", CheckboxType::class, [
+            "required" => false
+        ])
         ->add("submit", SubmitType::class);
         ;
     }

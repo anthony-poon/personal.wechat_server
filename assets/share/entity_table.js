@@ -5,20 +5,20 @@ import 'datatables.net-select-bs4/js/select.bootstrap4';
 import 'datatables.net-responsive-bs4/js/responsive.bootstrap4';
 import URI from "urijs";
 import 'urijs/src/URITemplate';
+import _ from "underscore";
 
 export default class EntityTable {
     constructor(options) {
         this.el = options.el;
         this.column = $(this.el).data("column");
-        this.btns =$(this.el).data("btn");
-        console.log(this.btns);
+        this.btns = $(this.el).data("btn");
     }
 
     init() {
         let arr = [];
         this.btns.forEach((btn) => {
             let re = /{([\w_\-])+}/;
-            let haveParam = re.test(btn.path);
+            let haveParam = re.test(btn.path) || !_.isEmpty(btn.param);
             let className = "table-btn";
             if (haveParam) {
                 className += " have-param";
@@ -28,7 +28,17 @@ export default class EntityTable {
                 className: className,
                 action: (e, dt, node, config) => {
                     let id = parseInt(dt.rows(".selected").ids().toArray()[0]);
-                    location.href = URI.expand(btn.path, {
+                    let rowParam = dt.rows(".selected").nodes().to$().data("param");
+                    let path = btn.path;
+                    if (!_.isEmpty(btn.param)) {
+                        let queryStr = [];
+                        btn.param.forEach((key) => {
+                            queryStr.push(key + "=" + rowParam[key]);
+                        });
+                        queryStr = encodeURI(queryStr.join("&"));
+                        path = path + "?" + queryStr;
+                    }
+                    location.href = URI.expand(path, {
                         id: id
                     });
                 },

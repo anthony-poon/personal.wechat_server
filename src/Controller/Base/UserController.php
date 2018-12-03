@@ -3,6 +3,7 @@
 namespace App\Controller\Base;
 
 use App\Entity\Base\User;
+use App\Entity\Core\AbstractStoreFront;
 use App\Entity\Core\WeChatUser;
 use App\FormType\Form\Core\WeChatUserForm;
 use App\FormType\Form\Users\CreateUsersForm;
@@ -34,9 +35,11 @@ class UserController extends Controller {
     public function list(EntityTableHelper $helper, RouterInterface $router) {
         $repo = $this->getDoctrine()->getRepository(User::class);
         $users = $repo->findAll();
-        $helper->addButton("Create", "user_create");
         $helper->addButton("Edit", "user_edit");
         $helper->addButton("Delete", "user_delete");
+        $helper->addButton("View Items", "store_item_list_store_items", [
+            "user"
+        ]);
         $helper->setHeader([
         	"#",
 			"Username",
@@ -45,13 +48,15 @@ class UserController extends Controller {
 		]);
         $helper->setTitle("Users");
         foreach ($users as $u) {
-        	/* @var User $u */
-			$helper->addRow($u->getId(), [
-				$u->getId(),
-				$u->getUsername(),
-				$u->getFullName(),
-				$u->getEmail()
-			]);
+        	/* @var WeChatUser $u */
+            $helper->addRow($u->getId(), [
+                $u->getId(),
+                $u->getUsername(),
+                $u->getFullName(),
+                $u->getEmail()
+            ], [
+                "user" => $u->getId()
+            ]);
 		}
 
         return $this->render("render/entity_table.html.twig", $helper->compile());
