@@ -8,6 +8,7 @@
 
 namespace App\FormType\Form\Core;
 
+use App\FormType\Component\CompositeCollectionType;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\NumberType;
 use Symfony\Component\Form\Extension\Core\Type\SubmitType;
@@ -22,17 +23,29 @@ class GlobalValueForm extends AbstractType {
                 "disabled" => true
             ])
             ->add("visitorCountMod", NumberType::class)
-            ->add("globalNotification", TextareaType::class, [
-                "required" => false
+            ->add("globalNotification", CompositeCollectionType::class, [
+                "entry_type" => TextareaType::class,
+                "allow_add" => true,
+                "allow_delete" => true,
+                "force_serial_index" => true
             ])
-            ->add("moduleNotification", TextareaType::class, [
-                "required" => false
+            ->add("moduleNotification", CompositeCollectionType::class, [
+                "entry_type" => TextareaType::class,
+                "allow_add" => true,
+                "allow_delete" => true,
+                "force_serial_index" => true
             ])
-            ->add("storeFrontNotification", TextareaType::class, [
-                "required" => false
+            ->add("storeFrontNotification", CompositeCollectionType::class, [
+                "entry_type" => TextareaType::class,
+                "allow_add" => true,
+                "allow_delete" => true,
+                "force_serial_index" => true
             ])
-            ->add("storeItemNotification", TextareaType::class, [
-                "required" => false
+            ->add("storeItemNotification", CompositeCollectionType::class, [
+                "entry_type" => TextareaType::class,
+                "allow_add" => true,
+                "allow_delete" => true,
+                "force_serial_index" => true
             ])
             ->add("Submit", SubmitType::class)
         ;
