@@ -71,7 +71,10 @@ class StoreItemAPIController extends Controller{
                         }
                         $shouldShow = $shouldShow && (empty($query) || !empty(preg_grep("/".$query."/iu", $param)));
                     }
+                    $em = $this->getDoctrine()->getManager();
                     if ($shouldShow) {
+                        $storeItem->setVisitorCount($storeItem->getVisitorCount() + 1);
+                        $em->persist($storeItem);
                         $arr = $storeItem->jsonSerialize();
                         if ($arr["assets"]) {
                             foreach (array_keys($arr["assets"]) as $key) {
@@ -80,6 +83,7 @@ class StoreItemAPIController extends Controller{
                         }
                         $rtn[] = $arr;
                     }
+                    $em->flush();
                 }
             }
             usort($rtn, function($arr1, $arr2) {
@@ -257,7 +261,7 @@ class StoreItemAPIController extends Controller{
             $storeItem->setLastTopTime($now);
             $storeItem->getStoreFront()->setIsAutoTop(true);
             $storeItem->getStoreFront()->setLastTopTime($now);
-            $ticket->setIsConsumed(true);
+            // $ticket->setIsConsumed(true);
             $em->persist($ticket);
         }
         $em->persist($storeItem);

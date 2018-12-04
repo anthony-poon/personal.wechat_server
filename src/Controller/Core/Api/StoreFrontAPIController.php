@@ -66,20 +66,26 @@ class StoreFrontAPIController extends Controller {
         $storeItems = $storeFront->getStoreItems()
             ->filter(function(AbstractStoreItem $item) use ($showTraded, $showDisabled, $showExpired){
                 return $item->isActive($showTraded, $showDisabled, $showExpired);
-            })
-            ->map(function(AbstractStoreItem $item) {
-            $arr = $item->jsonSerialize();
-            if ($arr["assets"]) {
-                foreach (array_keys($arr["assets"]) as $key) {
-                    $arr["assets"][$key] = $this->generateUrl("api_asset_get_item", ["id" => $arr["assets"][$key]],UrlGeneratorInterface::ABSOLUTE_URL);
+            });
+        $em = $this->getDoctrine()->getManager();
+        $rtn = [];
+        foreach ($storeItems as $storeItem) {
+            /* @var AbstractStoreItem $storeItem */
+            $storeItem->setVisitorCount($storeItem->getVisitorCount() + 1);
+            $em->persist($storeItem);
+            $json = $storeItem->jsonSerialize();
+            if ($json["assets"]) {
+                foreach (array_keys($json["assets"]) as $key) {
+                    $json["assets"][$key] = $this->generateUrl("api_asset_get_item", ["id" => $json["assets"][$key]],UrlGeneratorInterface::ABSOLUTE_URL);
                 }
             }
-            return $arr;
-        })->toArray();
-        usort($storeItems, function($arr1, $arr2) {
+            $rtn[] = $json;
+        }
+        $em->flush();
+        usort($rtn, function($arr1, $arr2) {
             return -($arr1["lastTopTime"] <=> $arr2["lastTopTime"]);
         });
-        return new JsonResponse($storeItems);
+        return new JsonResponse($rtn);
     }
 
     /**
