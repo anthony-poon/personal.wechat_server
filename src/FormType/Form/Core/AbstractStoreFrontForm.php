@@ -18,12 +18,12 @@ use Symfony\Component\OptionsResolver\OptionsResolver;
 
 class AbstractStoreFrontForm extends AbstractType {
     public function buildForm(FormBuilderInterface $builder, array $options) {
-        $builder->add("name", TextType::class)
-            ->add("isDisabled", CheckboxType::class, [
-                "required" => false
+        $builder->add("name", TextType::class, [
+                "label" => "Store Front Name"
             ])
-            ->add("isSticky", CheckboxType::class, [
-                "required" => false
+            ->add("isDisabled", CheckboxType::class, [
+                "required" => false,
+                "label" => "Disabled"
             ])
             ->add("Submit", SubmitType::class)
         ;
