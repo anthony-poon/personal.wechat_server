@@ -264,7 +264,9 @@ class StoreItemAPIController extends Controller{
             if ($ticket->getUser() && ($ticket->getUser() !== $this->getUser())) {
                 throw new \Exception("This ticket is already used by another user.");
             }
-            $ticket->setUser($storeItem->getStoreFront()->getOwner());
+            if (!$ticket->getUser()) {
+                $ticket->setUser($storeItem->getStoreFront()->getOwner());
+            }
             // $ticket->setIsConsumed(true);
             $em->persist($ticket);
         }
