@@ -163,10 +163,10 @@ class ApiAuthenticator extends AbstractGuardAuthenticator {
                     $userGroup->getChildren()->add($user);
                     $this->em->persist($userGroup);
                     $user->setUsername($credentials["userInfo"]["openId"]);
-                    $user->setFullName($credentials["userInfo"]["nickName"]);
-                    $this->em->persist($user);
-                    $this->em->flush();
                 }
+                $user->setFullName($credentials["userInfo"]["nickName"]);
+                $this->em->persist($user);
+                $this->em->flush();
                 return $user;
             default:
                 throw new \Exception("Unsupported authentication method");

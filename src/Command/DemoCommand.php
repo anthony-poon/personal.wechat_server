@@ -14,6 +14,7 @@ use App\Entity\Core\AbstractStoreFront;
 use App\Entity\Core\Housing\HousingItem;
 use App\Entity\Core\Housing\HousingModule;
 use App\Entity\Core\Housing\HousingStoreFront;
+use App\Entity\Core\Location;
 use App\Entity\Core\SecondHand\SecondHandItem;
 use App\Entity\Core\SecondHand\SecondHandModule;
 use App\Entity\Core\SecondHand\SecondHandStoreFront;
@@ -41,11 +42,20 @@ class DemoCommand extends Command {
         $this->em = $em;
         $this->passwordEncoder = $passwordEncoder;
         $baseUrl = $params->get("kernel.project_dir");
-        $this->placeholderPic = [];
-        foreach (scandir($baseUrl."/assets/images/demo") as $img) {
+        $this->placeholderPic = [
+            "secondHand" => [],
+            "housing" => []
+        ];
+        foreach (scandir($baseUrl."/assets/images/demo/housing") as $img) {
             if (preg_match("/^\w.*\.(png|jpg|jpeg)$/", $img)) {
-                $path = $baseUrl."/assets/images/demo/".$img;
-                $this->placeholderPic[] = base64_encode(file_get_contents($path));
+                $path = $baseUrl."/assets/images/demo/housing/".$img;
+                $this->placeholderPic["housing"][] = base64_encode(file_get_contents($path));
+            }
+        }
+        foreach (scandir($baseUrl."/assets/images/demo/second_hand_item") as $img) {
+            if (preg_match("/^\w.*\.(png|jpg|jpeg)$/", $img)) {
+                $path = $baseUrl."/assets/images/demo/second_hand_item/".$img;
+                $this->placeholderPic["secondHand"][] = base64_encode(file_get_contents($path));
             }
         }
         parent::__construct($name);
@@ -98,7 +108,10 @@ class DemoCommand extends Command {
     }
 
     private function initStoreFront(WeChatUser $user) {
-        $modules = $this->em->getRepository(AbstractModule::class)->findAll();
+        $city = $this->em->getRepository(Location::class)->findOneBy([
+            "name" => "伦敦"
+        ]);
+        $modules = $city->getModules();
         $storeFronts = [];
         foreach ($modules as $module) {
             switch (get_class($module)) {
@@ -153,10 +166,11 @@ class DemoCommand extends Command {
 
     private function initStoreItem(AbstractStoreFront $storeFront) {
         $items = [];
+        $max = rand(1, self::DEMO_STORE_ITEM_COUNT);
         switch (get_class($storeFront)) {
             case SecondHandStoreFront::class:
                 /* @var SecondHandStoreFront $storeFront */
-                for ($i = 1; $i <= self::DEMO_STORE_ITEM_COUNT; $i ++) {
+                for ($i = 1; $i <= $max; $i ++) {
                     $name = "_second_hand_item_$i";
                     $item = $storeFront->getStoreItems()->filter(function(SecondHandItem $item) use ($name) {
                         return $item->getName() === $name;
@@ -168,11 +182,11 @@ class DemoCommand extends Command {
                         $item->setDescription(get_class($item));
                         $item->setPrice(rand(1,4) * 100);
                         $item->setVisitorCount(rand(1, 10000));
-                        foreach (array_rand($this->placeholderPic, 3) as $index) {
+                        foreach (array_rand($this->placeholderPic["secondHand"], 3) as $index) {
                             $asset = new StoreItemAsset();
                             $asset->setNamespace(SecondHandItem::class);
                             $asset->setMimeType("image/jpeg");
-                            $asset->setBase64($this->placeholderPic[$index]);
+                            $asset->setBase64($this->placeholderPic["secondHand"][$index]);
                             $date = new DateTimeImmutable();
                             $offset = rand(1,5);
                             $asset->setCreateDate($date->modify("-$offset day"));
@@ -190,7 +204,7 @@ class DemoCommand extends Command {
                 break;
             case HousingStoreFront::class:
                 /* @var HousingStoreFront $storeFront */
-                for ($i = 1; $i <= self::DEMO_STORE_ITEM_COUNT; $i ++) {
+                for ($i = 1; $i <= $max; $i ++) {
                     $name = "_housing_item_$i";
                     $item = $storeFront->getStoreItems()->filter(function(HousingItem $item) use ($name) {
                         return $item->getName() === $name;
@@ -205,11 +219,11 @@ class DemoCommand extends Command {
                         $item->setLocation("_location");
                         $item->setDuration(rand(10, 730));
                         $item->setPropertyType("_type_1");
-                        foreach (array_rand($this->placeholderPic, 3) as $index) {
+                        foreach (array_rand($this->placeholderPic["housing"], 3) as $index) {
                             $asset = new StoreItemAsset();
                             $asset->setNamespace(SecondHandItem::class);
                             $asset->setMimeType("image/jpeg");
-                            $asset->setBase64($this->placeholderPic[$index]);
+                            $asset->setBase64($this->placeholderPic["housing"][$index]);
                             $date = new DateTimeImmutable();
                             $offset = rand(1,5);
                             $asset->setCreateDate($date->modify("-$offset day"));
@@ -227,7 +241,7 @@ class DemoCommand extends Command {
                 break;
             case TicketingStoreFront::class:
                 /* @var HousingStoreFront $storeFront */
-                for ($i = 1; $i <= self::DEMO_STORE_ITEM_COUNT; $i ++) {
+                for ($i = 1; $i <= $max; $i ++) {
                     $name = "_ticketing_item_$i";
                     $item = $storeFront->getStoreItems()->filter(function(TicketingItem $item) use ($name) {
                         return $item->getName() === $name;
@@ -242,17 +256,6 @@ class DemoCommand extends Command {
                         $date = new DateTimeImmutable();
                         $offset = rand(1, 720);
                         $item->setValidTill($date->modify("+$offset day"));
-                        foreach (array_rand($this->placeholderPic, 3) as $index) {
-                            $asset = new StoreItemAsset();
-                            $asset->setNamespace(SecondHandItem::class);
-                            $asset->setMimeType("image/jpeg");
-                            $asset->setBase64($this->placeholderPic[$index]);
-                            $date = new DateTimeImmutable();
-                            $offset = rand(1,5);
-                            $asset->setCreateDate($date->modify("-$offset day"));
-                            $asset->setStoreItem($item);
-                            $this->em->persist($asset);
-                        }
                         $offset = rand(1,5);
                         $item->setCreateDate($date->modify("-$offset day"));
                         $item->setLastTopTime($date->modify("-$offset day"));
