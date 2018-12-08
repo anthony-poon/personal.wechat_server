@@ -261,6 +261,10 @@ class StoreItemAPIController extends Controller{
             $storeItem->setLastTopTime($now);
             $storeItem->getStoreFront()->setIsAutoTop(true);
             $storeItem->getStoreFront()->setLastTopTime($now);
+            if ($ticket->getUser() && ($ticket->getUser() !== $this->getUser())) {
+                throw new \Exception("This ticket is already used by another user.");
+            }
+            $ticket->setUser($storeItem->getStoreFront()->getOwner());
             // $ticket->setIsConsumed(true);
             $em->persist($ticket);
         }

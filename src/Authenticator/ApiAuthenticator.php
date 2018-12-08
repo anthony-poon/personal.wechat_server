@@ -118,17 +118,17 @@ class ApiAuthenticator extends AbstractGuardAuthenticator {
                 if (!$user) {
                     $user = new WeChatUser();
                     $user->setWeChatOpenId($credentials["openId"]);
+                    $user->setUsername($credentials["openId"]);
+                    $user->setFullName($credentials["openId"]);
                     /* @var \App\Entity\Base\SecurityGroup $userGroup */
                     $userGroup = $this->em->getRepository(SecurityGroup::class)->findOneBy([
                         "siteToken" => "ROLE_USER"
                     ]);
                     $userGroup->getChildren()->add($user);
                     $this->em->persist($userGroup);
+                    $this->em->persist($user);
+                    $this->em->flush();
                 }
-                $user->setUsername($credentials["nickName"]);
-                $user->setFullName($credentials["openId"]);
-                $this->em->persist($user);
-                $this->em->flush();
                 return $user;
             case "token":
                 $token = (new Parser())->parse($credentials["jwt"]);
@@ -152,11 +152,11 @@ class ApiAuthenticator extends AbstractGuardAuthenticator {
                     ]);
                     $userGroup->getChildren()->add($user);
                     $this->em->persist($userGroup);
+                    $user->setUsername($credentials["userInfo"]["openId"]);
+                    $user->setFullName($credentials["userInfo"]["nickName"]);
+                    $this->em->persist($user);
+                    $this->em->flush();
                 }
-                $user->setUsername($credentials["userInfo"]["openId"]);
-                $user->setFullName($credentials["userInfo"]["nickName"]);
-                $this->em->persist($user);
-                $this->em->flush();
                 return $user;
             default:
                 throw new \Exception("Unsupported authentication method");

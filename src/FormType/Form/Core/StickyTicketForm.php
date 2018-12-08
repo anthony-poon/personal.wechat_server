@@ -9,6 +9,8 @@
 namespace App\FormType\Form\Core;
 
 use App\Entity\Core\StickyTicket;
+use App\Entity\Core\WeChatUser;
+use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
 use Symfony\Component\Form\Extension\Core\Type\DateTimeType;
@@ -29,6 +31,10 @@ class StickyTicketForm extends AbstractType {
             'widget' => 'single_text',
             'input' => 'datetime_immutable',
             "disabled" => true
+        ])->add("user", EntityType::class, [
+            "class" => WeChatUser::class,
+            "choice_label" => "fullName",
+            "required" => false,
         ])->add("isConsumed", CheckboxType::class, [
             "required" => false
         ])

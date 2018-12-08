@@ -51,6 +51,12 @@ class StickyTicket {
     private $expireDate;
 
     /**
+     * @var WeChatUser
+     * @ORM\ManyToOne(targetEntity="App\Entity\Core\WeChatUser", inversedBy="tickets")
+     */
+    private $user;
+
+    /**
      * @return int
      */
     public function getId(): int {
@@ -113,6 +119,22 @@ class StickyTicket {
      */
     public function setExpireDate(\DateTimeImmutable $expireDate): void {
         $this->expireDate = $expireDate;
+    }
+
+    /**
+     * @return WeChatUser
+     */
+    public function getUser(): ?WeChatUser {
+        return $this->user;
+    }
+
+    /**
+     * @param WeChatUser $user
+     * @return StickyTicket
+     */
+    public function setUser(WeChatUser $user): StickyTicket {
+        $this->user = $user;
+        return $this;
     }
 
     /**

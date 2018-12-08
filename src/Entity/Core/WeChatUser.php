@@ -9,6 +9,7 @@
 namespace App\Entity\Core;
 
 use App\Entity\Base\User;
+use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 /**
@@ -32,6 +33,18 @@ class WeChatUser extends User implements \JsonSerializable {
     private $weChatOpenId;
 
     /**
+     * @var Collection
+     * @ORM\OneToMany(targetEntity="App\Entity\Core\StickyTicket", mappedBy="user")
+     */
+    private $tickets;
+
+    public function __construct() {
+        parent::__construct();
+        $this->storeFronts = new ArrayCollection();
+        $this->tickets = new ArrayCollection();
+    }
+
+    /**
      * @return Collection
      */
     public function getStoreFronts(): Collection {
@@ -52,6 +65,13 @@ class WeChatUser extends User implements \JsonSerializable {
     public function setWeChatOpenId(string $weChatOpenId): WeChatUser {
         $this->weChatOpenId = $weChatOpenId;
         return $this;
+    }
+
+    /**
+     * @return Collection
+     */
+    public function getTickets(): Collection {
+        return $this->tickets;
     }
 
     public function jsonSerialize() {
