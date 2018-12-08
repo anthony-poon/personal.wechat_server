@@ -238,7 +238,7 @@ class StoreItemAPIController extends Controller{
         }
         $em = $this->getDoctrine()->getManager();
         if (isset($json["stickyTicket"])) {
-            $tickets = $this->getDoctrine()->getRepository(StickyTicket::class)->findAll([
+            $tickets = $this->getDoctrine()->getRepository(StickyTicket::class)->findBy([
                 "code" => $json["stickyTicket"]
             ]);
             if (!$tickets) {
