@@ -34,8 +34,15 @@ class GlobalValueController extends Controller {
             $data = $form->getData();
             $em = $this->getDoctrine()->getManager();
             foreach ($data as $key => $value) {
-                $objCache[$key]->setValue($value);
-                $em->persist($objCache[$key]);
+                if (isset($objCache[$key])) {
+                    $objCache[$key]->setValue($value);
+                    $em->persist($objCache[$key]);
+                } else {
+                    $gv = new GlobalValue();
+                    $gv->setKey($key);
+                    $gv->setValue($value);
+                    $em->persist($gv);
+                }
             }
             $em->flush();
             return $this->redirectToRoute("global_value_edit");

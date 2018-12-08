@@ -72,6 +72,16 @@ class ApiAuthenticator extends AbstractGuardAuthenticator {
     }
 
     public function getCredentials(Request $request) {
+        $gv = $this->em->getRepository(GlobalValue::class)->findOneBy([
+            "key" => "mockLogin"
+        ]);
+        if (getenv("APP_ENV") === "dev" && $gv && $gv->getValue()) {
+            // Override login only when in dev env and setting is set
+            return [
+                "type" => "openId",
+                "openId" => $gv->getValue(),
+            ];
+        }
         $json = json_decode($request->getContent(), true);
         $haveOpenId = !empty($json["openId"]) && "security_api_login" === $request->attributes->get("_route") && $request->isMethod("POST") && $request->getContentType() === "json";
         $haveToken = !empty($request->headers->get("Authorization"));

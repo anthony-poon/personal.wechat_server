@@ -8,11 +8,13 @@
 
 namespace App\FormType\Form\Core;
 
+use App\Entity\Core\WeChatUser;
 use App\FormType\Component\CompositeCollectionType;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\NumberType;
 use Symfony\Component\Form\Extension\Core\Type\SubmitType;
 use Symfony\Component\Form\Extension\Core\Type\TextareaType;
+use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 
@@ -46,6 +48,10 @@ class GlobalValueForm extends AbstractType {
                 "allow_add" => true,
                 "allow_delete" => true,
                 "force_serial_index" => true
+            ])
+            ->add("mockLogin", TextType::class,[
+                "required" => false,
+                "label" => "Open Id for Mock Login"
             ])
             ->add("Submit", SubmitType::class)
         ;
