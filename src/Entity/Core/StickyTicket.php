@@ -132,7 +132,7 @@ class StickyTicket {
      * @param WeChatUser $user
      * @return StickyTicket
      */
-    public function setUser(WeChatUser $user): StickyTicket {
+    public function setUser(?WeChatUser $user): StickyTicket {
         $this->user = $user;
         return $this;
     }
