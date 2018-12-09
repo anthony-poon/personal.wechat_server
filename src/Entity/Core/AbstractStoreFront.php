@@ -234,7 +234,9 @@ abstract class AbstractStoreFront implements \JsonSerializable {
             /* @var \App\Entity\Core\AbstractStoreItem $storeItem */
             foreach ($storeItem->getAssets() as $asset) {
                 /* @var StoreItemAsset $asset */
-                $assets[] = $asset;
+                if ($storeItem->isActive()) {
+                    $assets[] = $asset;
+                }
             }
         }
         usort($assets, function(StoreItemAsset $asset1, StoreItemAsset $asset2) {
