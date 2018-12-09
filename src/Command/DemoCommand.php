@@ -182,6 +182,7 @@ class DemoCommand extends Command {
                         $item->setDescription(get_class($item));
                         $item->setPrice(rand(1,4) * 100);
                         $item->setVisitorCount(rand(1, 10000));
+                        $item->setWeChatId("_we_chat_id");
                         foreach (array_rand($this->placeholderPic["secondHand"], 3) as $index) {
                             $asset = new StoreItemAsset();
                             $asset->setNamespace(SecondHandItem::class);
@@ -219,6 +220,7 @@ class DemoCommand extends Command {
                         $item->setLocation("_location");
                         $item->setDuration(rand(10, 730));
                         $item->setPropertyType("_type_1");
+                        $item->setWeChatId("_we_chat_id");
                         foreach (array_rand($this->placeholderPic["housing"], 3) as $index) {
                             $asset = new StoreItemAsset();
                             $asset->setNamespace(SecondHandItem::class);
@@ -253,6 +255,7 @@ class DemoCommand extends Command {
                         $item->setDescription(get_class($item));
                         $item->setPrice(rand(1,4) * 100);
                         $item->setVisitorCount(rand(1, 10000));
+                        $item->setWeChatId("_we_chat_id");
                         $date = new DateTimeImmutable();
                         $offset = rand(1, 720);
                         $item->setValidTill($date->modify("+$offset day"));
