@@ -34,7 +34,7 @@ class InitCommand extends Command {
 
     protected function execute(InputInterface $input, OutputInterface $output) {
 		$output->writeln("Creating root users");
-		$root = $this->initUser("root", md5(random_bytes(10)));
+		$root = $this->initUser("root", "password");
 		$output->writeln("Username: root");
 		$output->writeln("Password: ".$root->getPlainPassword());
 
