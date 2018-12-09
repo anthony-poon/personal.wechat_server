@@ -6,6 +6,9 @@ Encore
     // the public path used by the web server to access the previous directory
     .setPublicPath('/build')
     .cleanupOutputBeforeBuild()
+    .addEntry("index", [
+        "./assets/images/computer.svg"
+    ])
     .addEntry("base", [
         "./assets/base.js",
         "./assets/base.scss",
