@@ -24,7 +24,7 @@ class SystemAPIController extends Controller {
             "globalNotification",
             "moduleNotification",
             "storeFrontNotification",
-            "storeItemNotification"
+            "storeItemNotification",
         ];
         $rtn = [];
         foreach ($keys as $key) {
@@ -33,6 +33,12 @@ class SystemAPIController extends Controller {
             ]);
             $rtn[$key] = $gv->getValue();
         }
+        $visitorCount = $repo->findOneBy([
+            "key" => "visitorCount"
+        ])->getValue() + $repo->findOneBy([
+            "key" => "visitorCountMod"
+        ])->getValue();
+        $rtn["visitorCount"] = $visitorCount;
         return new JsonResponse($rtn);
     }
 }

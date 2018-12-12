@@ -54,7 +54,12 @@ class ModuleAPIController extends Controller {
         $showDisabled = $request->query->get("showDisabled") == true;
         $rtn = $module->getStoreFronts()
             ->filter(function(AbstractStoreFront $storeFront) use ($showDisabled){
-                return $storeFront->isActive($showDisabled);
+                return
+                    // Must be active and have at least 1 item
+                    $storeFront->isActive($showDisabled) &&
+                    ($storeFront->getStoreItems()->filter(function(AbstractStoreItem $storeItem){
+                        return $storeItem->isActive();
+                    })->count() > 0);
             })
             ->map(function(AbstractStoreFront $storeFront) {
                 return $storeFront->jsonSerialize();

@@ -39,7 +39,11 @@ class StoreFrontAPIController extends Controller {
         /* @var AbstractStoreFront $storeFront */
         $rtn = [];
         foreach ($storeFronts as $storeFront) {
-            if ($storeFront->isActive($showDisabled)) {
+            if ($storeFront->isActive($showDisabled) &&
+                $storeFront->getStoreItems()
+                    ->filter(function(AbstractStoreItem $storeItem){
+                        return $storeItem->isActive();
+                    })->count() > 0) {
                 $arr = $storeFront->jsonSerialize();
                 if ($arr["asset"]) {
                     $arr["asset"] = $this->generateUrl("api_asset_get_item", ["id" => $arr["asset"]],UrlGeneratorInterface::ABSOLUTE_URL);
