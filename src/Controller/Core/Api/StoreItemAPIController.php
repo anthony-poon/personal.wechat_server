@@ -213,6 +213,12 @@ class StoreItemAPIController extends Controller{
             ],
             "stickyTicket" => [
                 new Assert\NotBlank()
+            ],
+            "currency" => [
+                new Assert\Regex([
+                    "pattern" => "/^RMB|GBP$/i",
+                    "message" => "Can only be GBP or RMB"
+                ])
             ]
         ];
         $validator->setAllowExtraFields(true);
@@ -224,6 +230,7 @@ class StoreItemAPIController extends Controller{
         isset($json["isTraded"]) && $storeItem->setIsTraded((bool) $json["isTraded"]);
         isset($json["isDisabled"]) && $storeItem->setIsDisabled((bool) $json["isDisabled"]);
         isset($json["price"]) && $storeItem->setPrice($json["price"]);
+        isset($json["currency"]) && $storeItem->setCurrency($json["currency"]);
         switch (get_class($storeItem)) {
             case SecondHandItem::class:
                 break;

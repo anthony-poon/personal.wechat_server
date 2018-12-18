@@ -11,7 +11,9 @@ namespace App\FormType\Form\Core;
 
 use App\Entity\Core\SecondHand\SecondHandItem;
 use Symfony\Component\Form\AbstractType;
+use Symfony\Component\Form\CallbackTransformer;
 use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
+use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\Extension\Core\Type\DateTimeType;
 use Symfony\Component\Form\Extension\Core\Type\NumberType;
 use Symfony\Component\Form\Extension\Core\Type\SubmitType;
@@ -21,25 +23,55 @@ use Symfony\Component\OptionsResolver\OptionsResolver;
 
 class SecondHandItemForm extends AbstractType{
     public function buildForm(FormBuilderInterface $builder, array $options) {
-        $builder->add("name", TextType::class)
-            ->add("description", TextType::class)
-            ->add("price", NumberType::class)
-            ->add("visitorCount", NumberType::class, [
-                "disabled" => true
+        $builder->add("name", TextType::class, [
+                "label" => "Name"
             ])
-            ->add("visitorCountModification", NumberType::class)
+            ->add("description", TextType::class, [
+                "label" => "Description"
+            ])
+            ->add("price", NumberType::class, [
+                "label" => "Price"
+            ])
+            ->add("Currency", ChoiceType::class, [
+                "choices" => [
+                    "GBP" => "GBP",
+                    "RMB" => "RMB"
+                ],
+            ])
+            ->add("weChatId", TextType::class, [
+                "required" => false,
+                "label" => "WeChat Id"
+            ])
+            ->add("visitorCount", NumberType::class, [
+                "disabled" => true,
+                "label" => "Real Visitor Count"
+            ])
+            ->add("visitorCountModification", NumberType::class, [
+                "label" => "Visitor Count Modification"
+            ])
             ->add("isDisabled", CheckboxType::class, [
-                "required" => false
+                "required" => false,
+                "label" => "Disabled"
             ])
             ->add("isTraded", CheckboxType::class, [
-                "required" => false
+                "required" => false,
+                "label" => "Traded"
             ])
-            ->add("isAutoTop", CheckboxType::class, [
-                "required" => false
+            ->add("lastTopTime", DateTimeType::class, [
+                "disabled" => true,
+                'widget' => 'single_text',
+                'input' => 'datetime_immutable',
+                'label' => "AutoTop Timestamp (Used for item ordering)"
+            ])
+            ->add("setAutoTop", CheckboxType::class, [
+                "required" => false,
+                "mapped" => false,
+                "label" => "Set AutoTop"
             ])
             ->add("createDate", DateTimeType::class, [
                 'widget' => 'single_text',
-                'input' => 'datetime_immutable'
+                'input' => 'datetime_immutable',
+                "label" => "Create Date"
             ])
             ->add("Submit", SubmitType::class)
         ;

@@ -97,6 +97,9 @@ class StoreItemController extends Controller {
         $form->handleRequest($request);
         if ($form->isSubmitted() && $form->isValid()) {
             $storeItem = $form->getData();
+            if ($form->get("setAutoTop")->getData()) {
+                $storeItem->setLastTopTime(new \DateTimeImmutable());
+            }
             $em = $this->getDoctrine()->getManager();
             $em->persist($storeItem);
             $em->flush();

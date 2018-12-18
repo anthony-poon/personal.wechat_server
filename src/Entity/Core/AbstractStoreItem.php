@@ -108,6 +108,12 @@ abstract class AbstractStoreItem implements \JsonSerializable {
      */
     private $lastTopTime;
 
+    /**
+     * @var string
+     * @ORM\Column(type="string")
+     */
+    private $currency = "GBP";
+
     public function __construct() {
         $this->assets = new ArrayCollection();
     }
@@ -347,6 +353,24 @@ abstract class AbstractStoreItem implements \JsonSerializable {
         return $now > $this->getExpireDate();
     }
 
+    /**
+     * @return string
+     */
+    public function getCurrency(): string {
+        return $this->currency;
+    }
+
+    /**
+     * @param string $currency
+     * @return AbstractStoreItem
+     */
+    public function setCurrency(string $currency): AbstractStoreItem {
+        $this->currency = $currency;
+        return $this;
+    }
+
+
+
     public function jsonSerialize() {
         $rtn = [
             "id" => $this->getId(),
@@ -359,6 +383,7 @@ abstract class AbstractStoreItem implements \JsonSerializable {
             "openId" => $this->getStoreFront()->getOwner()->getWeChatOpenId(),
             "description" => $this->getDescription(),
             "price" => $this->getPrice(),
+            "currency" => $this->getCurrency(),
             "weChatId" => $this->getWeChatId(),
             "visitorCount" => $this->getVisitorCount() + $this->getVisitorCountModification(),
             "createDate" => $this->getCreateDate()->format("Y-m-d H:i:s"),

@@ -122,6 +122,14 @@ class StoreFrontAPIController extends Controller {
                     "type" => "numeric"
                 ])
             ],
+            "currency" => [
+                new Assert\Optional([
+                    new Assert\Regex([
+                        "pattern" => "/^RMB|GBP$/i",
+                        "message" => "Can only be GBP or RMB"
+                    ])
+                ])
+            ]
         ];
         switch (get_class($storeFront)) {
             case SecondHandStoreFront::class:
@@ -158,6 +166,7 @@ class StoreFrontAPIController extends Controller {
         $storeItem->setDescription($json["description"] ?? null);
         $storeItem->setWeChatId($json["weChatId"] ?? null);
         $storeItem->setPrice($json["price"]);
+        $storeItem->setCurrency(strtoupper($json["currency"] ?? "GBP"));
         switch (get_class($storeItem)) {
             case SecondHandItem::class:
                 break;
