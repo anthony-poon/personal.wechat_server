@@ -51,14 +51,16 @@ class ModuleAPIController extends Controller {
         $repo = $this->getDoctrine()->getRepository(AbstractModule::class);
         $module = $repo->find($id);
         /* @var AbstractModule $module */
+        $showTraded = $request->query->get("showTraded") == true;
         $showDisabled = $request->query->get("showDisabled") == true;
+        $showExpired = $request->query->get("showExpired") == true;
         $rtn = $module->getStoreFronts()
-            ->filter(function(AbstractStoreFront $storeFront) use ($showDisabled){
+            ->filter(function(AbstractStoreFront $storeFront) use ($showTraded, $showDisabled, $showExpired){
                 return
                     // Must be active and have at least 1 item
                     $storeFront->isActive($showDisabled) &&
-                    ($storeFront->getStoreItems()->filter(function(AbstractStoreItem $storeItem){
-                        return $storeItem->isActive();
+                    ($storeFront->getStoreItems()->filter(function(AbstractStoreItem $storeItem) use ($showTraded, $showDisabled, $showExpired){
+                        return $storeItem->isActive($showTraded, $showDisabled, $showExpired);
                     })->count() > 0);
             })
             ->map(function(AbstractStoreFront $storeFront) {

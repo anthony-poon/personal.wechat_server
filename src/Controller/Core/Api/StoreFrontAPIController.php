@@ -35,14 +35,16 @@ class StoreFrontAPIController extends Controller {
     public function getStoreFronts(Request $request) {
         $repo = $this->getDoctrine()->getRepository(AbstractStoreFront::class);
         $storeFronts = $repo->findAll();
+        $showTraded = $request->query->get("showTraded") == true;
         $showDisabled = $request->query->get("showDisabled") == true;
+        $showExpired = $request->query->get("showExpired") == true;
         /* @var AbstractStoreFront $storeFront */
         $rtn = [];
         foreach ($storeFronts as $storeFront) {
             if ($storeFront->isActive($showDisabled) &&
                 $storeFront->getStoreItems()
-                    ->filter(function(AbstractStoreItem $storeItem){
-                        return $storeItem->isActive();
+                    ->filter(function(AbstractStoreItem $storeItem) use ($showTraded, $showDisabled, $showExpired){
+                        return $storeItem->isActive($showTraded, $showDisabled, $showExpired);
                     })->count() > 0) {
                 $arr = $storeFront->jsonSerialize();
                 if ($arr["asset"]) {
