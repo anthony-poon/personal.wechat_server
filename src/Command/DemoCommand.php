@@ -25,16 +25,20 @@ use App\Entity\Core\Ticketing\TicketingStoreFront;
 use App\Entity\Core\WeChatUser;
 use DateTimeImmutable;
 use Doctrine\ORM\EntityManagerInterface;
+use Intervention\Image\Constraint;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Component\Security\Core\Encoder\UserPasswordEncoderInterface;
+use Intervention\Image\ImageManagerStatic as Image;
 
 class DemoCommand extends Command {
     private $em;
     private $passwordEncoder;
     private $placeholderPic;
+    private $thumbnailWidth;
+    private $thumbnailHeight;
     private const DEMO_USER_COUNT = 5;
     private const DEMO_STORE_ITEM_COUNT = 5;
 
@@ -42,6 +46,8 @@ class DemoCommand extends Command {
         $this->em = $em;
         $this->passwordEncoder = $passwordEncoder;
         $baseUrl = $params->get("kernel.project_dir");
+        $this->thumbnailWidth = $params->get("thumbnail_max_width");
+        $this->thumbnailHeight = $params->get("thumbnail_max_height");
         $this->placeholderPic = [
             "secondHand" => [],
             "housing" => []
@@ -72,7 +78,7 @@ class DemoCommand extends Command {
         for($i = 1; $i <= self::DEMO_USER_COUNT; $i ++) {
             $output->writeln("Creating Demo User user_$i");
             $user = $this->initUser("user_$i");
-             $users[] = $user;
+            $users[] = $user;
         }
         $storeFronts = [];
         foreach ($users as $user) {
@@ -188,6 +194,21 @@ class DemoCommand extends Command {
                             $asset->setNamespace(SecondHandItem::class);
                             $asset->setMimeType("image/jpeg");
                             $asset->setBase64($this->placeholderPic["secondHand"][$index]);
+                            $img = Image::make($asset->getBase64());
+                            if ($img->getWidth() > $img->getHeight()) {
+                                $img->resize($this->thumbnailWidth, null, function(Constraint $constraint){
+                                    $constraint->aspectRatio();
+                                    $constraint->upsize();
+                                });
+                            } else {
+                                $img->resize(null, $this->thumbnailHeight, function(Constraint $constraint){
+                                    $constraint->aspectRatio();
+                                    $constraint->upsize();
+                                });
+                            }
+                            $url = $img->encode("data-url");
+                            preg_match("/^data:.+;base64,(.+)/", $url, $match);
+                            $asset->setThumbnailBase64($match[1]);
                             $date = new DateTimeImmutable();
                             $offset = rand(1,5);
                             $asset->setCreateDate($date->modify("-$offset day"));
@@ -226,6 +247,21 @@ class DemoCommand extends Command {
                             $asset->setNamespace(SecondHandItem::class);
                             $asset->setMimeType("image/jpeg");
                             $asset->setBase64($this->placeholderPic["housing"][$index]);
+                            $img = Image::make($asset->getBase64());
+                            if ($img->getWidth() > $img->getHeight()) {
+                                $img->resize($this->thumbnailWidth, null, function(Constraint $constraint){
+                                    $constraint->aspectRatio();
+                                    $constraint->upsize();
+                                });
+                            } else {
+                                $img->resize(null, $this->thumbnailHeight, function(Constraint $constraint){
+                                    $constraint->aspectRatio();
+                                    $constraint->upsize();
+                                });
+                            }
+                            $url = $img->encode("data-url");
+                            preg_match("/^data:.+;base64,(.+)/", $url, $match);
+                            $asset->setThumbnailBase64($match[1]);
                             $date = new DateTimeImmutable();
                             $offset = rand(1,5);
                             $asset->setCreateDate($date->modify("-$offset day"));

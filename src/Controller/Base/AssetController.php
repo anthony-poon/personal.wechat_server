@@ -3,6 +3,7 @@
 namespace App\Controller\Base;
 
 use App\Entity\Base\Asset;
+use App\Entity\Core\StoreItemAsset;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -17,8 +18,14 @@ class AssetController extends AbstractController {
     public function getItem($id, Request $request) {
         $repo = $this->getDoctrine()->getRepository(Asset::class);
         $asset = $repo->find($id);
+        $isFull = $request->get("full");
         if ($asset) {
-            $file = base64_decode($asset->getBase64());
+            if (!$asset instanceof StoreItemAsset || $isFull) {
+                $file = base64_decode($asset->getBase64());
+            } else {
+                $file = base64_decode($asset->getThumbnailBase64());
+            }
+
             $rsp = new Response();
             $rsp->headers->set("Content-Type", $asset->getMimeType());
             $rsp->headers->set("Content-Disposition", "inline");

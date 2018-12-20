@@ -5,6 +5,8 @@ parameters:
     layout: 'compact'
     # menu_style: 'inline' / 'collapse'
     side_menu_style: 'collapse'
+    thumbnail_max_width: 400
+    thumbnail_max_height: 400
 
 services:
     # default configuration for services in *this* file

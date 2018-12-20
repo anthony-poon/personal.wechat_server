@@ -14,6 +14,8 @@ use App\Entity\Core\AbstractStoreItem;
 use App\Entity\Core\Housing\HousingItem;
 use App\Entity\Core\SecondHand\SecondHandItem;
 use App\Entity\Core\StickyTicket;
+use Intervention\Image\Constraint;
+use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Component\Validator\Constraints as Assert;
 use App\Entity\Core\StoreItemAsset;
 use App\Entity\Core\Ticketing\TicketingItem;
@@ -26,6 +28,7 @@ use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
+use Intervention\Image\ImageManagerStatic as Image;
 
 class StoreItemAPIController extends Controller{
     /**
@@ -117,7 +120,7 @@ class StoreItemAPIController extends Controller{
     /**
      * @Route("/api/store-items/{id}/assets", methods={"POST"}, name="api_store_item_create_asset")
      */
-    public function createAssets(int $id, Request $request) {
+    public function createAssets(int $id, Request $request, ParameterBagInterface $bag) {
         $repo = $this->getDoctrine()->getRepository(AbstractStoreItem::class);
         /* @var \App\Entity\Core\AbstractStoreItem $storeItem */
         $storeItem = $repo->find($id);
@@ -133,6 +136,21 @@ class StoreItemAPIController extends Controller{
         $asset->setMimeType($file->getMimeType());
         $asset->setBase64($base64);
         $asset->setStoreItem($storeItem);
+        $img = Image::make($asset->getBase64());
+        if ($img->getWidth() > $img->getHeight()) {
+            $img->resize($bag->get("thumbnail_max_width"), null, function(Constraint $constraint){
+                $constraint->aspectRatio();
+                $constraint->upsize();
+            });
+        } else {
+            $img->resize(null, $bag->get("thumbnail_max_height"), function(Constraint $constraint){
+                $constraint->aspectRatio();
+                $constraint->upsize();
+            });
+        }
+        $url = $img->encode("data-url");
+        preg_match("/^data:.+;base64,(.+)/", $url, $match);
+        $asset->setThumbnailBase64($match[1]);
         $em = $this->getDoctrine()->getManager();
         $em->persist($storeItem);
         $em->persist($asset);
