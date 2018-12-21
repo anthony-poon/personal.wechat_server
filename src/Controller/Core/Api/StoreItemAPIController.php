@@ -13,6 +13,7 @@ use App\Entity\Core\AbstractStoreFront;
 use App\Entity\Core\AbstractStoreItem;
 use App\Entity\Core\Housing\HousingItem;
 use App\Entity\Core\SecondHand\SecondHandItem;
+use App\Entity\Core\SecondHand\SecondHandStoreFront;
 use App\Entity\Core\StickyTicket;
 use Intervention\Image\Constraint;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
@@ -262,6 +263,7 @@ class StoreItemAPIController extends Controller{
                 break;
         }
         $em = $this->getDoctrine()->getManager();
+        $em->persist($storeItem);
         if (isset($json["stickyTicket"])) {
             $tickets = $this->getDoctrine()->getRepository(StickyTicket::class)->findBy([
                 "code" => $json["stickyTicket"]
@@ -277,25 +279,43 @@ class StoreItemAPIController extends Controller{
             if (!$ticket) {
                 throw new \Exception("Ticket expired or consumed.");
             }
-            $now = new \DateTimeImmutable();
-            $offset = $storeItem->getAutoTopFrequency();
-            if ($storeItem->isAutoTop() && $now < $storeItem->getLastTopTime()->modify("+$offset hours")) {
-                throw new \Exception("Cannot change ordering within $offset hours");
-            }
-            $storeItem->setIsAutoTop(true);
-            $storeItem->setLastTopTime($now);
-            $storeItem->getStoreFront()->setIsAutoTop(true);
-            $storeItem->getStoreFront()->setLastTopTime($now);
             if ($ticket->getUser() && ($ticket->getUser() !== $this->getUser())) {
                 throw new \Exception("This ticket is already used by another user.");
+            }
+            $now = new \DateTimeImmutable();
+            $offset = $storeItem->getAutoTopFrequency();
+            $storeFront = $storeItem->getStoreFront();
+            switch (get_class($storeFront)) {
+                case SecondHandStoreFront::class:
+                    // SecondHandItem auto top logic is defined in storefront.
+                    if ($storeFront->isAutoTop() && $now < $storeFront->getLastTopTime()->modify("+$offset hours")) {
+                        throw new \Exception("Cannot change ordering within $offset hours");
+                    }
+                    $storeFront->setIsAutoTop(true);
+                    $storeFront->setLastTopTime($now);
+                    foreach ($storeFront->getStoreItems() as $storeItem) {
+                        $storeItem->setIsAutoTop(true);
+                        $storeItem->setLastTopTime($now);
+                        $em->persist($storeItem);
+                    }
+                    $em->persist($storeFront);
+                    break;
+                default:
+                    // Other type is defined in store item
+                    if ($storeItem->isAutoTop() && $now < $storeItem->getLastTopTime()->modify("+$offset hours")) {
+                        throw new \Exception("Cannot change ordering within $offset hours");
+                    }
+                    $storeItem->setIsAutoTop(true);
+                    $storeItem->setLastTopTime($now);
+                    $em->persist($storeItem);
+                    break;
             }
             if (!$ticket->getUser()) {
                 $ticket->setUser($storeItem->getStoreFront()->getOwner());
             }
-            // $ticket->setIsConsumed(true);
+            $ticket->setIsConsumed(true);
             $em->persist($ticket);
         }
-        $em->persist($storeItem);
         $em->flush();
         return new JsonResponse($storeItem);
     }
