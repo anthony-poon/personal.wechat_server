@@ -391,9 +391,9 @@ abstract class AbstractStoreItem implements \JsonSerializable {
             "isDisabled" => $this->isDisabled(),
             "isExpired" => $this->isExpired(),
             "isTraded" => $this->isTraded(),
-            "assets" => $this->getAssets()->map(function(StoreItemAsset $asset){
+            "assets" => array_reverse($this->getAssets()->map(function(StoreItemAsset $asset){
                 return $asset->getId();
-            })->toArray()
+            })->toArray())
         ];
         return $rtn;
     }

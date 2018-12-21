@@ -185,7 +185,7 @@ class ApiAuthenticator extends AbstractGuardAuthenticator {
                 $data = new ValidationData();
                 $data->setIssuer($credentials["issuer"]);
                 $data->setAudience($credentials["audience"]);
-                $unaltered= $token->verify($signer, getenv("APP_SECRET"));
+                $unaltered = $token->verify($signer, getenv("APP_SECRET"));
                 $valid = $token->validate($data);
                 return $unaltered && $valid;
             default:
