@@ -230,9 +230,6 @@ class StoreItemAPIController extends Controller{
                     "type" => "boolean"
                 ])
             ],
-            "stickyTicket" => [
-                new Assert\NotBlank()
-            ],
             "currency" => [
                 new Assert\Regex([
                     "pattern" => "/^RMB|GBP$/i",
@@ -264,7 +261,7 @@ class StoreItemAPIController extends Controller{
         }
         $em = $this->getDoctrine()->getManager();
         $em->persist($storeItem);
-        if (isset($json["stickyTicket"])) {
+        if (!empty($json["stickyTicket"])) {
             $tickets = $this->getDoctrine()->getRepository(StickyTicket::class)->findBy([
                 "code" => $json["stickyTicket"]
             ]);
