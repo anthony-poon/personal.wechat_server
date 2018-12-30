@@ -171,6 +171,7 @@ class StoreFrontAPIController extends Controller {
         $storeItem->setCurrency(strtoupper($json["currency"] ?? "GBP"));
         switch (get_class($storeItem)) {
             case SecondHandItem::class:
+                $storeFront->setLastTopTime(new \DateTimeImmutable());
                 break;
             case HousingItem::class:
                 $storeItem->setDuration($json["duration"]);
@@ -184,6 +185,7 @@ class StoreFrontAPIController extends Controller {
         $storeItem->setStoreFront($storeFront);
         $em = $this->getDoctrine()->getManager();
         $em->persist($storeItem);
+        $em->persist($storeFront);
         $em->flush();
         return new JsonResponse($storeItem);
     }

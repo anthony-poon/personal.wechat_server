@@ -181,6 +181,7 @@ class ModuleAPIController extends Controller {
         $storeItem->setCurrency(strtoupper($json["currency"] ?? "GBP"));
         switch (get_class($storeItem)) {
             case SecondHandItem::class:
+                $storeFront->setLastTopTime(new \DateTimeImmutable());
                 break;
             case HousingItem::class:
                 $storeItem->setDuration($json["duration"]);
