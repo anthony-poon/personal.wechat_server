@@ -33,9 +33,15 @@ class Asset {
 
     /**
      * @var string
-     * @ORM\Column(type="text")
+     * @ORM\Column(type="text", nullable=true)
      */
     private $base64;
+
+    /**
+     * @var string
+     * @ORM\Column(type="string", length=1024)
+     */
+    private $imgPath;
 
     /**
      * @var string
@@ -79,6 +85,20 @@ class Asset {
     {
         $this->base64 = $base64;
         return $this;
+    }
+
+    /**
+     * @return string
+     */
+    public function getImgPath(): string {
+        return $this->imgPath;
+    }
+
+    /**
+     * @param string $imgPath
+     */
+    public function setImgPath(string $imgPath): void {
+        $this->imgPath = $imgPath;
     }
 
     /**

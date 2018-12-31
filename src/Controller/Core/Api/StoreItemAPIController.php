@@ -130,14 +130,17 @@ class StoreItemAPIController extends Controller{
         }
         $this->denyAccessUnlessGranted(StoreItemVoter::UPDATE, $storeItem);
         /* @var \Symfony\Component\HttpFoundation\File\UploadedFile $file */
+        $folder = realpath($bag->get("upload_img_path"));
+        $name = uniqid();
         $file = array_values($request->files->all())[0];
-        $base64 = base64_encode(file_get_contents($file->getRealPath()));
+        $mime = $file->getMimeType();
+        $file->move($folder, $name);
         $asset = new StoreItemAsset();
         $asset->setNamespace(get_class($storeItem));
-        $asset->setMimeType($file->getMimeType());
-        $asset->setBase64($base64);
+        $asset->setMimeType($mime);
+        $asset->setImgPath($name);
         $asset->setStoreItem($storeItem);
-        $img = Image::make($asset->getBase64());
+        $img = Image::make( $folder."/$name");
         if ($img->getWidth() > $img->getHeight()) {
             $img->resize($bag->get("thumbnail_max_width"), null, function(Constraint $constraint){
                 $constraint->aspectRatio();
@@ -149,9 +152,9 @@ class StoreItemAPIController extends Controller{
                 $constraint->upsize();
             });
         }
-        $url = $img->encode("data-url");
-        preg_match("/^data:.+;base64,(.+)/", $url, $match);
-        $asset->setThumbnailBase64($match[1]);
+        $tName = "thumbnail_".$name;
+        $img->save($folder."/".$tName);
+        $asset->setThumbnailPath($tName);
         $em = $this->getDoctrine()->getManager();
         $em->persist($storeItem);
         $em->persist($asset);
@@ -162,11 +165,16 @@ class StoreItemAPIController extends Controller{
     /**
      * @Route("/api/store-items/assets/{id}", methods={"DELETE"}, name="api_store_item_delete_asset")
      */
-    public function deleteAsset(int $id) {
+    public function deleteAsset(int $id, ParameterBagInterface $bag) {
         $repo = $this->getDoctrine()->getRepository(StoreItemAsset::class);
         $asset = $repo->find($id);
         if (empty($asset)) {
             throw new NotFoundHttpException("Cannot locate Entity");
+        }
+        $this->denyAccessUnlessGranted(StoreItemVoter::DELETE, $asset->getStoreItem());
+        unlink(realpath($bag->get("upload_img_path"). "/" .$asset->getImgPath()));
+        if ($asset instanceof StoreItemAsset) {
+            unlink(realpath($bag->get("upload_img_path"). "/" .$asset->getThumbnailPath()));
         }
         $em = $this->getDoctrine()->getManager();
         $em->remove($asset);

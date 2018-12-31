@@ -7,6 +7,7 @@ parameters:
     side_menu_style: 'collapse'
     thumbnail_max_width: 400
     thumbnail_max_height: 400
+    upload_img_path: "%kernel.root_dir%/../var/upload/image"
 
 services:
     # default configuration for services in *this* file

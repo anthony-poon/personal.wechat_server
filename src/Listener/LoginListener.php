@@ -10,6 +10,7 @@ namespace App\Listener;
 
 use App\Entity\Core\WeChatUser;
 use Symfony\Component\HttpFoundation\Session\SessionInterface;
+use Symfony\Component\Security\Core\Authentication\Token\UsernamePasswordToken;
 use Symfony\Component\Security\Guard\Token\PostAuthenticationGuardToken;
 use Symfony\Component\Security\Http\Event\InteractiveLoginEvent;
 
@@ -22,7 +23,7 @@ class LoginListener {
 
     public function onSecurityInteractiveLogin(InteractiveLoginEvent $event) {
         $token = $event->getAuthenticationToken();
-        if ($token instanceof PostAuthenticationGuardToken && $token->getProviderKey() === "main") {
+        if (($token instanceof UsernamePasswordToken || $token instanceof PostAuthenticationGuardToken) && $token->getProviderKey() === "main") {
             $user = $token->getUser();
             $this->session->set("userId", $user->getId());
             $now = new \DateTimeImmutable();
