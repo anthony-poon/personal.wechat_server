@@ -2,7 +2,7 @@
 ###> symfony/framework-bundle ###
 /.env
 /public/bundles/
-/var/
+/var/*
 /vendor/
 ###< symfony/framework-bundle ###
 
@@ -21,3 +21,7 @@ yarn-error.log
 .phpunit
 /phpunit.xml
 ###< symfony/phpunit-bridge ###
+
+!/var/upload
+!/var/upload/image
+!/var/upload/image/*
