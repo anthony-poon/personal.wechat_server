@@ -21,7 +21,7 @@ class ImageMigrationCommand extends Command{
     private $path;
     public function __construct(EntityManagerInterface $em, ParameterBagInterface $bag, $name = null) {
         $this->em = $em;
-        $this->path = realpath($bag->get("upload_img_path"));
+        $this->path = realpath($bag->get("upload_image_path"));
         parent::__construct($name);
     }
 
