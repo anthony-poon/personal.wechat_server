@@ -32,12 +32,6 @@ class StoreItemAsset extends Asset {
     private $thumbnailPath;
 
     /**
-     * @var string
-     * @ORM\Column(type="text", nullable=true)
-     */
-    private $thumbnailBase64;
-
-    /**
      * @return AbstractStoreItem
      */
     public function getStoreItem(): AbstractStoreItem {
@@ -54,18 +48,6 @@ class StoreItemAsset extends Asset {
     }
 
     /**
-     * @return null|string
-     */
-    public function getThumbnailBase64(): ?string {
-        if ($this->thumbnailBase64) {
-            return $this->thumbnailBase64;
-        } else {
-            return $this->getBase64();
-        }
-
-    }
-
-    /**
      * @return string
      */
     public function getThumbnailPath(): string {
@@ -78,15 +60,6 @@ class StoreItemAsset extends Asset {
      */
     public function setThumbnailPath(string $thumbnailPath): StoreItemAsset {
         $this->thumbnailPath = $thumbnailPath;
-        return $this;
-    }
-
-    /**
-     * @param null|string $thumbnailBase64
-     * @return StoreItemAsset
-     */
-    public function setThumbnailBase64(?string $thumbnailBase64): StoreItemAsset {
-        $this->thumbnailBase64 = $thumbnailBase64;
         return $this;
     }
 }

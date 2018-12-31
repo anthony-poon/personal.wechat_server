@@ -30,13 +30,6 @@ class Asset {
      */
     private $id;
 
-
-    /**
-     * @var string
-     * @ORM\Column(type="text", nullable=true)
-     */
-    private $base64;
-
     /**
      * @var string
      * @ORM\Column(type="string", length=1024)
@@ -67,24 +60,6 @@ class Asset {
     public function getId(): int
     {
         return $this->id;
-    }
-
-    /**
-     * @return string
-     */
-    public function getBase64(): ?string
-    {
-        return $this->base64;
-    }
-
-    /**
-     * @param string $base64
-     * @return Asset
-     */
-    public function setBase64(string $base64): Asset
-    {
-        $this->base64 = $base64;
-        return $this;
     }
 
     /**
